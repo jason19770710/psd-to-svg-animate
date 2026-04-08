@@ -2,12 +2,16 @@ import { AnimationConfig } from "@/types/psd";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2, ZoomIn, ArrowUpDown, MoveHorizontal, RotateCw, Eye, Palette } from "lucide-react";
+import { Settings2, ZoomIn, ArrowUpDown, MoveHorizontal, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AnimationPanelProps {
   layerName: string;
   config: AnimationConfig;
   onChange: (config: AnimationConfig) => void;
+  flipH: boolean;
+  flipV: boolean;
+  onFlip: (axis: "h" | "v") => void;
 }
 
 function Section({
