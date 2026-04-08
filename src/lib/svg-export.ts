@@ -118,7 +118,7 @@ export function generateAnimationCSS(
       return props.join(" ");
     };
 
-    if (isRotateOnly) {
+    if (isContinuousRotateOnly) {
       css += `@keyframes ${name} {
   from { ${buildFrame("start")} }
   to { ${buildFrame("end")} }
@@ -130,7 +130,7 @@ export function generateAnimationCSS(
 }\n`;
     }
 
-    const easing = isRotateOnly ? "linear" : "ease-in-out";
+    const easing = isContinuousRotateOnly ? "linear" : "ease-in-out";
     css += `.layer-${id} { transform-origin: ${cx}px ${cy}px; animation: ${name} ${duration}s ${easing} ${anyLoop ? "infinite" : "1"}; }\n`;
   }
 
