@@ -376,7 +376,7 @@ export default function Index() {
             onToggleExportExclude={toggleExportExclude}
             onDeleteLayer={deleteLayer}
             onReplaceLayerImage={replaceLayerImage}
-            onFlipLayer={flipLayer}
+          />
           />
         </div>
 
