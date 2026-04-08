@@ -118,6 +118,15 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
               >
                 {layer.exportExcluded ? <Ban className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
               </button>
+              {onDeleteLayer && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onDeleteLayer(layer.id); }}
+                  className="text-muted-foreground hover:text-destructive p-0.5"
+                  title="刪除圖層"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleVisibility(layer.id); }}
                 className="text-muted-foreground hover:text-foreground p-0.5"
