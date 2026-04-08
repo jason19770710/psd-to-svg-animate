@@ -105,6 +105,25 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
               )}
             </div>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onReplaceLayerImage && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "image/*,.svg,.webp,.gif,.bmp,.tiff,.tif";
+                    input.onchange = (ev) => {
+                      const f = (ev.target as HTMLInputElement).files?.[0];
+                      if (f) onReplaceLayerImage(layer.id, f);
+                    };
+                    input.click();
+                  }}
+                  className="text-muted-foreground hover:text-foreground p-0.5"
+                  title="替換圖片"
+                >
+                  <Replace className="h-3.5 w-3.5" />
+                </button>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onDuplicateLayer(layer.id); }}
                 className="text-muted-foreground hover:text-foreground p-0.5"
