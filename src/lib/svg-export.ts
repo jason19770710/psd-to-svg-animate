@@ -13,6 +13,14 @@ export function generateAnimationCSS(
     const id = layer.id;
     const cx = layer.left + layer.width / 2;
     const cy = layer.top + layer.height / 2;
+    const flipScale = `${layer.flipH ? -1 : 1}, ${layer.flipV ? -1 : 1}`;
+    const hasFlip = layer.flipH || layer.flipV;
+    const anim = animations[layer.id];
+    if (!anim) continue;
+
+    const id = layer.id;
+    const cx = layer.left + layer.width / 2;
+    const cy = layer.top + layer.height / 2;
 
     const hasScale = anim.scale.enabled;
     const hasBounce = anim.bounce.enabled;
