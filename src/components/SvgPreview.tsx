@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
-import { generateAnimationCSS } from "@/lib/svg-export";
+import { generateAnimationCSS, buildLayerSvgElements } from "@/lib/svg-export";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Maximize } from "lucide-react";
 
