@@ -222,6 +222,28 @@ export default function Index() {
     toast.success("已刪除圖層");
   }, [selectedId]);
 
+  const replaceLayerImage = useCallback((id: string, file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0);
+        const dataUrl = canvas.toDataURL("image/png");
+        setLayers((prev) => prev.map((l) =>
+          l.id === id ? { ...l, imageDataUrl: dataUrl, width: img.width, height: img.height } : l
+        ));
+        toast.success(`已替換圖層圖片`);
+      };
+      img.onerror = () => toast.error("無法載入圖片");
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
   const selectedLayer = layers.find((l) => l.id === selectedId);
 
   const PRESETS = [
