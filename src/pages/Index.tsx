@@ -396,6 +396,9 @@ export default function Index() {
               layerName={selectedLayer.name}
               config={animations[selectedId!]}
               onChange={(c) => updateAnimation(selectedId!, c)}
+              flipH={!!selectedLayer.flipH}
+              flipV={!!selectedLayer.flipV}
+              onFlip={(axis) => flipLayer(selectedId!, axis)}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center p-4">

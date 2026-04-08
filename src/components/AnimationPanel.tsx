@@ -65,7 +65,7 @@ function LoopToggle({ loop, onChange }: { loop: boolean; onChange: (v: boolean) 
   );
 }
 
-export function AnimationPanel({ layerName, config, onChange }: AnimationPanelProps) {
+export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
 
   return (
@@ -74,9 +74,32 @@ export function AnimationPanel({ layerName, config, onChange }: AnimationPanelPr
         <Settings2 className="h-4 w-4 text-primary" />
         <span className="font-mono text-sm font-medium text-foreground">動畫設定</span>
       </div>
-      <div className="px-4 py-2 border-b border-border">
-        <p className="text-xs text-muted-foreground">圖層</p>
-        <p className="text-sm text-foreground font-medium truncate">{layerName}</p>
+      <div className="px-4 py-2 border-b border-border space-y-2">
+        <div>
+          <p className="text-xs text-muted-foreground">圖層</p>
+          <p className="text-sm text-foreground font-medium truncate">{layerName}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">鏡射</span>
+          <Button
+            variant={flipH ? "default" : "outline"}
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => onFlip("h")}
+            title="水平鏡射"
+          >
+            <FlipHorizontal2 className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant={flipV ? "default" : "outline"}
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => onFlip("v")}
+            title="垂直鏡射"
+          >
+            <FlipVertical2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-3">
         {/* Scale */}
