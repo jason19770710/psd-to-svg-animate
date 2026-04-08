@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
-import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check } from "lucide-react";
+import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LayerListProps {
@@ -13,9 +13,10 @@ interface LayerListProps {
   onAddImage: (file: File) => void;
   onDuplicateLayer: (id: string) => void;
   onToggleExportExclude: (id: string) => void;
+  onDeleteLayer?: (id: string) => void;
 }
 
-export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude }: LayerListProps) {
+export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer }: LayerListProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
@@ -117,6 +118,15 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
               >
                 {layer.exportExcluded ? <Ban className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
               </button>
+              {onDeleteLayer && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onDeleteLayer(layer.id); }}
+                  className="text-muted-foreground hover:text-destructive p-0.5"
+                  title="刪除圖層"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleVisibility(layer.id); }}
                 className="text-muted-foreground hover:text-foreground p-0.5"
