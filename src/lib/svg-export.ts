@@ -50,9 +50,16 @@ export function generateAnimationCSS(
 
       if (hasRotate) {
         const deg = anim.rotate.clockwise ? anim.rotate.angle : -anim.rotate.angle;
-        if (phase === "start") parts.push("rotate(0deg)");
-        else if (phase === "mid") parts.push(`rotate(${deg / 2}deg)`);
-        else parts.push(`rotate(${deg}deg)`);
+        if (anim.rotate.mode === "continuous") {
+          // continuous: 0 → full angle
+          if (phase === "start") parts.push("rotate(0deg)");
+          else if (phase === "mid") parts.push(`rotate(${deg / 2}deg)`);
+          else parts.push(`rotate(${deg}deg)`);
+        } else {
+          // alternate: 0 → angle → 0
+          const rv = phase === "mid" ? deg : 0;
+          parts.push(`rotate(${rv}deg)`);
+        }
       }
 
       return parts.join(" ");
