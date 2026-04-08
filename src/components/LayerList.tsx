@@ -13,6 +13,7 @@ interface LayerListProps {
   onAddImage: (file: File) => void;
   onDuplicateLayer: (id: string) => void;
   onToggleExportExclude: (id: string) => void;
+  onDeleteLayer?: (id: string) => void;
 }
 
 export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude }: LayerListProps) {
