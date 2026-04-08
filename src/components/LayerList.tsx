@@ -134,24 +134,6 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
               >
                 <Copy className="h-3.5 w-3.5" />
               </button>
-              {onFlipLayer && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onFlipLayer(layer.id, "h"); }}
-                    className={`p-0.5 ${layer.flipH ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                    title="水平鏡射"
-                  >
-                    <FlipHorizontal2 className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onFlipLayer(layer.id, "v"); }}
-                    className={`p-0.5 ${layer.flipV ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                    title="垂直鏡射"
-                  >
-                    <FlipVertical2 className="h-3.5 w-3.5" />
-                  </button>
-                </>
-              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleExportExclude(layer.id); }}
                 className={`p-0.5 ${layer.exportExcluded ? "text-destructive" : "text-muted-foreground hover:text-foreground"}`}
