@@ -23,7 +23,7 @@ export function generateAnimationCSS(
     const hasFade = anim.fade?.enabled;
     const hasColor = anim.colorShift?.enabled;
 
-    if (!hasScale && !hasBounce && !hasMove && !hasRotate && !hasFade && !hasColor) continue;
+    if (!hasScale && !hasBounce && !hasMove && !hasRotate && !hasFade && !hasColor && !hasFlip) continue;
 
     const hasTransform = hasScale || hasBounce || hasMove || hasRotate;
 
