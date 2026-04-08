@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
-import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2, Replace, FlipHorizontal2, FlipVertical2 } from "lucide-react";
+import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2, Replace } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LayerListProps {
@@ -15,10 +15,9 @@ interface LayerListProps {
   onToggleExportExclude: (id: string) => void;
   onDeleteLayer?: (id: string) => void;
   onReplaceLayerImage?: (id: string, file: File) => void;
-  onFlipLayer?: (id: string, axis: "h" | "v") => void;
 }
 
-export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer, onReplaceLayerImage, onFlipLayer }: LayerListProps) {
+export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer, onReplaceLayerImage }: LayerListProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
@@ -99,10 +98,13 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
             <div className="w-8 h-8 rounded bg-secondary flex-shrink-0 overflow-hidden border border-border">
               <img src={layer.imageDataUrl} alt={layer.name} className="w-full h-full object-contain" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 flex items-center gap-1.5">
               <p className={`text-sm truncate ${layer.exportExcluded ? "text-muted-foreground line-through" : "text-foreground"}`}>{layer.name}</p>
               {hasAnimation(layer.id) && (
-                <p className="text-[10px] text-primary font-mono">● 動畫已設定</p>
+                <span className="text-[10px] text-primary font-mono whitespace-nowrap">● 動畫</span>
+              )}
+              {(layer.flipH || layer.flipV) && (
+                <span className="text-[10px] text-accent-foreground font-mono whitespace-nowrap">⇄</span>
               )}
             </div>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -132,24 +134,6 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
               >
                 <Copy className="h-3.5 w-3.5" />
               </button>
-              {onFlipLayer && (
-                <>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onFlipLayer(layer.id, "h"); }}
-                    className={`p-0.5 ${layer.flipH ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                    title="水平鏡射"
-                  >
-                    <FlipHorizontal2 className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onFlipLayer(layer.id, "v"); }}
-                    className={`p-0.5 ${layer.flipV ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                    title="垂直鏡射"
-                  >
-                    <FlipVertical2 className="h-3.5 w-3.5" />
-                  </button>
-                </>
-              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleExportExclude(layer.id); }}
                 className={`p-0.5 ${layer.exportExcluded ? "text-destructive" : "text-muted-foreground hover:text-foreground"}`}

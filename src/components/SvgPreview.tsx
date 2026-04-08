@@ -157,13 +157,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                   width={layer.width}
                   height={layer.height}
                   className={`layer-${layer.id}`}
-                  style={{
-                    transformOrigin: `${layer.left + layer.width / 2}px ${layer.top + layer.height / 2}px`,
-                    transform: [
-                      layer.flipH ? 'scaleX(-1)' : '',
-                      layer.flipV ? 'scaleY(-1)' : '',
-                    ].filter(Boolean).join(' ') || undefined,
-                  }}
+                  style={{ transformOrigin: `${layer.left + layer.width / 2}px ${layer.top + layer.height / 2}px` }}
                 />
                 {selectedId === layer.id && (
                   <rect

@@ -13,6 +13,8 @@ export function generateAnimationCSS(
     const id = layer.id;
     const cx = layer.left + layer.width / 2;
     const cy = layer.top + layer.height / 2;
+    const hasFlip = !!(layer.flipH || layer.flipV);
+    const flipPart = hasFlip ? `scale(${layer.flipH ? -1 : 1}, ${layer.flipV ? -1 : 1})` : "";
 
     const hasScale = anim.scale.enabled;
     const hasBounce = anim.bounce.enabled;
@@ -21,13 +23,15 @@ export function generateAnimationCSS(
     const hasFade = anim.fade?.enabled;
     const hasColor = anim.colorShift?.enabled;
 
-    if (!hasScale && !hasBounce && !hasMove && !hasRotate && !hasFade && !hasColor) continue;
+    if (!hasScale && !hasBounce && !hasMove && !hasRotate && !hasFade && !hasColor && !hasFlip) continue;
 
-    const hasTransform = hasScale || hasBounce || hasMove || hasRotate;
+    const hasTransform = hasScale || hasBounce || hasMove || hasRotate || hasFlip;
 
     // Build transform string for a given phase
     const buildTransform = (phase: "start" | "mid" | "end") => {
       const parts: string[] = [];
+
+      if (flipPart) parts.push(flipPart);
 
       if (hasBounce) {
         const ty = phase === "mid" ? `-${anim.bounce.distance}px` : "0";
@@ -67,6 +71,14 @@ export function generateAnimationCSS(
       if (phase === "mid") return `hue-rotate(${anim.colorShift.hueRotate}deg) saturate(${anim.colorShift.saturate}) brightness(${anim.colorShift.brightness})`;
       return "hue-rotate(0deg) saturate(1) brightness(1)";
     };
+
+    const hasAnyEffect = hasScale || hasBounce || hasMove || hasRotate || hasFade || hasColor;
+
+    // Flip-only: no animation, just static transform
+    if (!hasAnyEffect && hasFlip) {
+      css += `.layer-${id} { transform-origin: ${cx}px ${cy}px; transform: ${flipPart}; }\n`;
+      continue;
+    }
 
     // Determine loop and duration
     const anyLoop = (hasScale && anim.scale.loop) ||
@@ -154,13 +166,10 @@ export function exportSvg(
   const renderLayers = [...visibleLayers].reverse();
 
   const images = renderLayers
-    .map((l) => {
-      const flipParts: string[] = [];
-      if (l.flipH) flipParts.push('scaleX(-1)');
-      if (l.flipV) flipParts.push('scaleY(-1)');
-      const flipTransform = flipParts.length ? ` transform="${flipParts.join(' ')}"` : '';
-      return `  <image href="${l.imageDataUrl}" x="${l.left}" y="${l.top}" width="${l.width}" height="${l.height}" class="layer-${l.id}"${flipTransform} style="transform-origin: ${l.left + l.width / 2}px ${l.top + l.height / 2}px" />`;
-    })
+    .map(
+      (l) =>
+        `  <image href="${l.imageDataUrl}" x="${l.left}" y="${l.top}" width="${l.width}" height="${l.height}" class="layer-${l.id}" style="transform-origin: ${l.left + l.width / 2}px ${l.top + l.height / 2}px" />`
+    )
     .join("\n");
 
   // Embed animation metadata as JSON in a custom metadata element
