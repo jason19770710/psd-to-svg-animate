@@ -25,7 +25,7 @@ export function generateAnimationCSS(
 
     if (!hasScale && !hasBounce && !hasMove && !hasRotate && !hasFade && !hasColor && !hasFlip) continue;
 
-    const hasTransform = hasScale || hasBounce || hasMove || hasRotate;
+    const hasTransform = hasScale || hasBounce || hasMove || hasRotate || hasFlip;
 
     // Build transform string for a given phase
     const buildTransform = (phase: "start" | "mid" | "end") => {
