@@ -104,7 +104,7 @@ export function generateAnimationCSS(
     if (hasColor) speeds.push(anim.colorShift.speed);
     const duration = Math.max(...speeds);
 
-    const isContinuousRotateOnly = hasRotate && anim.rotate.mode === "continuous" && !hasScale && !hasBounce && !hasMove && !hasFade && !hasColor;
+    const isContinuousRotate = hasRotate && anim.rotate.mode === "continuous";
 
     const name = `anim-${id}`;
 
@@ -118,7 +118,8 @@ export function generateAnimationCSS(
       return props.join(" ");
     };
 
-    if (isContinuousRotateOnly) {
+    if (isContinuousRotate) {
+      // continuous rotate: from → to (no return)
       css += `@keyframes ${name} {
   from { ${buildFrame("start")} }
   to { ${buildFrame("end")} }
@@ -130,7 +131,7 @@ export function generateAnimationCSS(
 }\n`;
     }
 
-    const easing = isContinuousRotateOnly ? "linear" : "ease-in-out";
+    const easing = isContinuousRotate ? "linear" : "ease-in-out";
     css += `.layer-${id} { transform-origin: ${cx}px ${cy}px; animation: ${name} ${duration}s ${easing} ${anyLoop ? "infinite" : "1"}; }\n`;
   }
 
