@@ -8,6 +8,8 @@ export interface LayerInfo {
   imageDataUrl: string; // base64 PNG
   visible: boolean;
   exportExcluded?: boolean; // marked layers won't be exported
+  flipH?: boolean;
+  flipV?: boolean;
 }
 
 export interface AnimationConfig {

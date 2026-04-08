@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
-import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2, Replace } from "lucide-react";
+import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2, Replace, FlipHorizontal2, FlipVertical2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LayerListProps {
@@ -15,9 +15,10 @@ interface LayerListProps {
   onToggleExportExclude: (id: string) => void;
   onDeleteLayer?: (id: string) => void;
   onReplaceLayerImage?: (id: string, file: File) => void;
+  onFlipLayer?: (id: string, axis: "h" | "v") => void;
 }
 
-export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer, onReplaceLayerImage }: LayerListProps) {
+export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer, onReplaceLayerImage, onFlipLayer }: LayerListProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
@@ -131,6 +132,24 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
               >
                 <Copy className="h-3.5 w-3.5" />
               </button>
+              {onFlipLayer && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onFlipLayer(layer.id, "h"); }}
+                    className={`p-0.5 ${layer.flipH ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                    title="水平鏡射"
+                  >
+                    <FlipHorizontal2 className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onFlipLayer(layer.id, "v"); }}
+                    className={`p-0.5 ${layer.flipV ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                    title="垂直鏡射"
+                  >
+                    <FlipVertical2 className="h-3.5 w-3.5" />
+                  </button>
+                </>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleExportExclude(layer.id); }}
                 className={`p-0.5 ${layer.exportExcluded ? "text-destructive" : "text-muted-foreground hover:text-foreground"}`}

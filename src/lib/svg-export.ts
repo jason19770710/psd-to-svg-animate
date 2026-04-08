@@ -154,10 +154,13 @@ export function exportSvg(
   const renderLayers = [...visibleLayers].reverse();
 
   const images = renderLayers
-    .map(
-      (l) =>
-        `  <image href="${l.imageDataUrl}" x="${l.left}" y="${l.top}" width="${l.width}" height="${l.height}" class="layer-${l.id}" style="transform-origin: ${l.left + l.width / 2}px ${l.top + l.height / 2}px" />`
-    )
+    .map((l) => {
+      const flipParts: string[] = [];
+      if (l.flipH) flipParts.push('scaleX(-1)');
+      if (l.flipV) flipParts.push('scaleY(-1)');
+      const flipTransform = flipParts.length ? ` transform="${flipParts.join(' ')}"` : '';
+      return `  <image href="${l.imageDataUrl}" x="${l.left}" y="${l.top}" width="${l.width}" height="${l.height}" class="layer-${l.id}"${flipTransform} style="transform-origin: ${l.left + l.width / 2}px ${l.top + l.height / 2}px" />`;
+    })
     .join("\n");
 
   // Embed animation metadata as JSON in a custom metadata element
