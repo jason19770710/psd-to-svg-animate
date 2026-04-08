@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
-import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check } from "lucide-react";
+import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LayerListProps {
