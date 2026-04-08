@@ -31,6 +31,8 @@ export function generateAnimationCSS(
     const buildTransform = (phase: "start" | "mid" | "end") => {
       const parts: string[] = [];
 
+      if (flipPart) parts.push(flipPart);
+
       if (hasBounce) {
         const ty = phase === "mid" ? `-${anim.bounce.distance}px` : "0";
         parts.push(`translateY(${ty})`);
