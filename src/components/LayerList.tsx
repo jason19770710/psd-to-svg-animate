@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
-import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2 } from "lucide-react";
+import { Layers, Eye, EyeOff, GripVertical, Plus, Copy, Ban, Check, Trash2, Replace } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface LayerListProps {
@@ -14,9 +14,10 @@ interface LayerListProps {
   onDuplicateLayer: (id: string) => void;
   onToggleExportExclude: (id: string) => void;
   onDeleteLayer?: (id: string) => void;
+  onReplaceLayerImage?: (id: string, file: File) => void;
 }
 
-export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer }: LayerListProps) {
+export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer, onReplaceLayerImage }: LayerListProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
@@ -104,6 +105,25 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
               )}
             </div>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onReplaceLayerImage && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "image/*,.svg,.webp,.gif,.bmp,.tiff,.tif";
+                    input.onchange = (ev) => {
+                      const f = (ev.target as HTMLInputElement).files?.[0];
+                      if (f) onReplaceLayerImage(layer.id, f);
+                    };
+                    input.click();
+                  }}
+                  className="text-muted-foreground hover:text-foreground p-0.5"
+                  title="替換圖片"
+                >
+                  <Replace className="h-3.5 w-3.5" />
+                </button>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onDuplicateLayer(layer.id); }}
                 className="text-muted-foreground hover:text-foreground p-0.5"
