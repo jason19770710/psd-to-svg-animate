@@ -206,6 +206,22 @@ export default function Index() {
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, exportExcluded: !l.exportExcluded } : l)));
   }, []);
 
+  const deleteLayer = useCallback((id: string) => {
+    setLayers((prev) => {
+      const newLayers = prev.filter((l) => l.id !== id);
+      if (selectedId === id) {
+        setSelectedId(newLayers[0]?.id ?? null);
+      }
+      return newLayers;
+    });
+    setAnimations((prev) => {
+      const newAnims = { ...prev };
+      delete newAnims[id];
+      return newAnims;
+    });
+    toast.success("已刪除圖層");
+  }, [selectedId]);
+
   const selectedLayer = layers.find((l) => l.id === selectedId);
 
   const PRESETS = [
