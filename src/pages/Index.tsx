@@ -345,6 +345,7 @@ export default function Index() {
             onAddImage={handleAddImage}
             onDuplicateLayer={duplicateLayer}
             onToggleExportExclude={toggleExportExclude}
+            onDeleteLayer={deleteLayer}
           />
         </div>
 
