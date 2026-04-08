@@ -72,6 +72,14 @@ export function generateAnimationCSS(
       return "hue-rotate(0deg) saturate(1) brightness(1)";
     };
 
+    const hasAnyEffect = hasScale || hasBounce || hasMove || hasRotate || hasFade || hasColor;
+
+    // Flip-only: no animation, just static transform
+    if (!hasAnyEffect && hasFlip) {
+      css += `.layer-${id} { transform-origin: ${cx}px ${cy}px; transform: ${flipPart}; }\n`;
+      continue;
+    }
+
     // Determine loop and duration
     const anyLoop = (hasScale && anim.scale.loop) ||
                     (hasBounce && anim.bounce.loop) ||
