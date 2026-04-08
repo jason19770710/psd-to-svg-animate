@@ -155,7 +155,7 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
               onClick={() => update({ rotate: { ...config.rotate, mode: config.rotate.mode === "continuous" ? "alternate" : "continuous" } })}
               className="text-xs font-mono text-primary hover:underline"
             >
-              {config.rotate.mode === "continuous" ? "持續360同方向轉 ↻" : "來回旋轉 ⇄"}
+              {config.rotate.mode === "continuous" ? "持續同方向轉 ↻" : "來回旋轉 ⇄"}
             </button>
           </div>
         </Section>
