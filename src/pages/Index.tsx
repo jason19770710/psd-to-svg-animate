@@ -206,6 +206,13 @@ export default function Index() {
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, exportExcluded: !l.exportExcluded } : l)));
   }, []);
 
+  const flipLayer = useCallback((id: string, axis: "h" | "v") => {
+    setLayers((prev) => prev.map((l) => {
+      if (l.id !== id) return l;
+      return axis === "h" ? { ...l, flipH: !l.flipH } : { ...l, flipV: !l.flipV };
+    }));
+  }, []);
+
   const deleteLayer = useCallback((id: string) => {
     setLayers((prev) => {
       const newLayers = prev.filter((l) => l.id !== id);
