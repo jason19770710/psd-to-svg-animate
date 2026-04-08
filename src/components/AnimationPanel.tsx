@@ -149,6 +149,15 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
               {config.rotate.clockwise ? "順時針 →" : "逆時針 ←"}
             </button>
           </div>
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-muted-foreground">模式</Label>
+            <button
+              onClick={() => update({ rotate: { ...config.rotate, mode: config.rotate.mode === "continuous" ? "alternate" : "continuous" } })}
+              className="text-xs font-mono text-primary hover:underline"
+            >
+              {config.rotate.mode === "continuous" ? "持續旋轉 ↻" : "來回旋轉 ⇄"}
+            </button>
+          </div>
         </Section>
 
         {/* Fade (Opacity) */}
