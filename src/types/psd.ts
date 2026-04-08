@@ -35,6 +35,7 @@ export interface AnimationConfig {
     enabled: boolean;
     angle: number;    // degrees
     clockwise: boolean;
+    mode: "continuous" | "alternate"; // continuous = same direction, alternate = back and forth
     speed: number;
     loop: boolean;
   };
