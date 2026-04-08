@@ -25,44 +25,34 @@ export function generateAnimationCSS(
 
     if (!hasScale && !hasBounce && !hasMove && !hasRotate && !hasFade && !hasColor && !hasFlip) continue;
 
-    const hasTransform = hasScale || hasBounce || hasMove || hasRotate || hasFlip;
-
-    // Build transform string for a given phase
-    const buildTransform = (phase: "start" | "mid" | "end") => {
+    // Build transform parts WITHOUT rotate (for oscillating animation)
+    const buildOscillatingTransform = (phase: "start" | "mid" | "end") => {
       const parts: string[] = [];
-
       if (flipPart) parts.push(flipPart);
-
       if (hasBounce) {
         const ty = phase === "mid" ? `-${anim.bounce.distance}px` : "0";
         parts.push(`translateY(${ty})`);
       }
-
       if (hasMove) {
         const tx = phase === "mid" ? `${anim.move.distance}px` : "0";
         parts.push(`translateX(${tx})`);
       }
-
       if (hasScale) {
         const sv = phase === "mid" ? anim.scale.value : 1;
         parts.push(`scale(${sv})`);
       }
-
-      if (hasRotate) {
+      if (hasRotate && anim.rotate.mode === "alternate") {
         const deg = anim.rotate.clockwise ? anim.rotate.angle : -anim.rotate.angle;
-        if (anim.rotate.mode === "continuous") {
-          // continuous: 0 → full angle
-          if (phase === "start") parts.push("rotate(0deg)");
-          else if (phase === "mid") parts.push(`rotate(${deg / 2}deg)`);
-          else parts.push(`rotate(${deg}deg)`);
-        } else {
-          // alternate: 0 → angle → 0
-          const rv = phase === "mid" ? deg : 0;
-          parts.push(`rotate(${rv}deg)`);
-        }
+        const rv = phase === "mid" ? deg : 0;
+        parts.push(`rotate(${rv}deg)`);
       }
-
       return parts.join(" ");
+    };
+
+    // Build continuous rotate transform
+    const buildContinuousRotateTransform = (phase: "start" | "end") => {
+      const deg = anim.rotate.clockwise ? anim.rotate.angle : -anim.rotate.angle;
+      return phase === "start" ? "rotate(0deg)" : `rotate(${deg}deg)`;
     };
 
     const buildOpacity = (phase: "start" | "mid" | "end") => {
@@ -87,7 +77,10 @@ export function generateAnimationCSS(
       continue;
     }
 
-    // Determine loop and duration
+    const isContinuousRotate = hasRotate && anim.rotate.mode === "continuous";
+    const hasOscillating = hasScale || hasBounce || hasMove || (hasRotate && anim.rotate.mode === "alternate") || hasFade || hasColor;
+
+    // Determine loop and duration per group
     const anyLoop = (hasScale && anim.scale.loop) ||
                     (hasBounce && anim.bounce.loop) ||
                     (hasMove && anim.move.loop) ||
@@ -95,44 +88,60 @@ export function generateAnimationCSS(
                     (hasFade && anim.fade.loop) ||
                     (hasColor && anim.colorShift.loop);
 
-    const speeds: number[] = [];
-    if (hasScale) speeds.push(anim.scale.speed);
-    if (hasBounce) speeds.push(anim.bounce.speed);
-    if (hasMove) speeds.push(anim.move.speed);
-    if (hasRotate) speeds.push(anim.rotate.speed);
-    if (hasFade) speeds.push(anim.fade.speed);
-    if (hasColor) speeds.push(anim.colorShift.speed);
-    const duration = Math.max(...speeds);
+    const animParts: string[] = [];
 
-    const isContinuousRotate = hasRotate && anim.rotate.mode === "continuous";
-
-    const name = `anim-${id}`;
-
-    const buildFrame = (phase: "start" | "mid" | "end") => {
-      const props: string[] = [];
-      if (hasTransform) props.push(`transform: ${buildTransform(phase)};`);
-      const opacity = buildOpacity(phase);
-      if (opacity !== null) props.push(`opacity: ${opacity};`);
-      const filter = buildFilter(phase);
-      if (filter !== null) props.push(`filter: ${filter};`);
-      return props.join(" ");
-    };
-
+    // --- Continuous rotate animation (separate) ---
     if (isContinuousRotate) {
-      // continuous rotate: from → to (no return)
-      css += `@keyframes ${name} {
-  from { ${buildFrame("start")} }
-  to { ${buildFrame("end")} }
+      const rName = `anim-rot-${id}`;
+      css += `@keyframes ${rName} {
+  from { transform: ${flipPart ? flipPart + ' ' : ''}${buildContinuousRotateTransform("start")}; }
+  to { transform: ${flipPart ? flipPart + ' ' : ''}${buildContinuousRotateTransform("end")}; }
 }\n`;
-    } else {
-      css += `@keyframes ${name} {
-  0%, 100% { ${buildFrame("start")} }
-  50% { ${buildFrame("mid")} }
-}\n`;
+      animParts.push(`${rName} ${anim.rotate.speed}s linear ${anim.rotate.loop ? "infinite" : "1"}`);
     }
 
-    const easing = isContinuousRotate ? "linear" : "ease-in-out";
-    css += `.layer-${id} { transform-origin: ${cx}px ${cy}px; animation: ${name} ${duration}s ${easing} ${anyLoop ? "infinite" : "1"}; }\n`;
+    // --- Oscillating animation (bounce, scale, move, alternate rotate, fade, color) ---
+    if (hasOscillating || (hasFlip && !isContinuousRotate)) {
+      const hasOscTransform = hasScale || hasBounce || hasMove || (hasRotate && anim.rotate.mode === "alternate") || hasFlip;
+      const oName = `anim-osc-${id}`;
+
+      const buildOscFrame = (phase: "start" | "mid" | "end") => {
+        const props: string[] = [];
+        if (hasOscTransform) props.push(`transform: ${buildOscillatingTransform(phase)};`);
+        const opacity = buildOpacity(phase);
+        if (opacity !== null) props.push(`opacity: ${opacity};`);
+        const filter = buildFilter(phase);
+        if (filter !== null) props.push(`filter: ${filter};`);
+        return props.join(" ");
+      };
+
+      css += `@keyframes ${oName} {
+  0%, 100% { ${buildOscFrame("start")} }
+  50% { ${buildOscFrame("mid")} }
+}\n`;
+
+      const oscSpeeds: number[] = [];
+      if (hasScale) oscSpeeds.push(anim.scale.speed);
+      if (hasBounce) oscSpeeds.push(anim.bounce.speed);
+      if (hasMove) oscSpeeds.push(anim.move.speed);
+      if (hasRotate && anim.rotate.mode === "alternate") oscSpeeds.push(anim.rotate.speed);
+      if (hasFade) oscSpeeds.push(anim.fade.speed);
+      if (hasColor) oscSpeeds.push(anim.colorShift.speed);
+      const oscDuration = oscSpeeds.length > 0 ? Math.max(...oscSpeeds) : 1;
+
+      animParts.push(`${oName} ${oscDuration}s ease-in-out ${anyLoop ? "infinite" : "1"}`);
+    }
+
+    // --- Only continuous rotate, no other effects ---
+    if (isContinuousRotate && !hasOscillating && hasFlip) {
+      // flip is in the rotate keyframe already, no extra needed
+    }
+
+    if (animParts.length > 0) {
+      css += `.layer-${id} { transform-origin: ${cx}px ${cy}px; animation: ${animParts.join(", ")}; }\n`;
+    } else if (hasFlip) {
+      css += `.layer-${id} { transform-origin: ${cx}px ${cy}px; transform: ${flipPart}; }\n`;
+    }
   }
 
   return css;
