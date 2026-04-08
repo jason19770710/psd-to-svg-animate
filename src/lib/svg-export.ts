@@ -104,7 +104,7 @@ export function generateAnimationCSS(
     if (hasColor) speeds.push(anim.colorShift.speed);
     const duration = Math.max(...speeds);
 
-    const isRotateOnly = hasRotate && !hasScale && !hasBounce && !hasMove && !hasFade && !hasColor;
+    const isContinuousRotateOnly = hasRotate && anim.rotate.mode === "continuous" && !hasScale && !hasBounce && !hasMove && !hasFade && !hasColor;
 
     const name = `anim-${id}`;
 
