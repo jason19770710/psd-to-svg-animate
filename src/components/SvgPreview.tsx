@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
-import { generateAnimationCSS } from "@/lib/svg-export";
+import { generateAnimationCSS, buildLayerSvgElements } from "@/lib/svg-export";
 import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Maximize } from "lucide-react";
 
@@ -144,36 +144,53 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
             <defs>
               <style>{css}</style>
             </defs>
-            {renderLayers.map((layer) => (
-              <g
-                key={layer.id}
-                onPointerDown={(e) => handlePointerDown(e, layer.id)}
-                style={{ cursor: "grab" }}
-              >
-                <image
-                  href={layer.imageDataUrl}
-                  x={layer.left}
-                  y={layer.top}
-                  width={layer.width}
-                  height={layer.height}
-                  className={`layer-${layer.id}`}
-                  style={{ transformOrigin: `${layer.left + layer.width / 2}px ${layer.top + layer.height / 2}px` }}
-                />
-                {selectedId === layer.id && (
-                  <rect
-                    x={layer.left - 1}
-                    y={layer.top - 1}
-                    width={layer.width + 2}
-                    height={layer.height + 2}
-                    fill="none"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    strokeDasharray="6 3"
-                    pointerEvents="none"
+            {renderLayers.map((layer) => {
+              const anim = animations[layer.id];
+              const { wrapperClasses, imageClass } = buildLayerSvgElements(layer, anim);
+              const origin = `${layer.left + layer.width / 2}px ${layer.top + layer.height / 2}px`;
+
+              let content = (
+                <>
+                  <image
+                    href={layer.imageDataUrl}
+                    x={layer.left}
+                    y={layer.top}
+                    width={layer.width}
+                    height={layer.height}
+                    className={imageClass || undefined}
+                    style={{ transformOrigin: origin }}
                   />
-                )}
-              </g>
-            ))}
+                  {selectedId === layer.id && (
+                    <rect
+                      x={layer.left - 1}
+                      y={layer.top - 1}
+                      width={layer.width + 2}
+                      height={layer.height + 2}
+                      fill="none"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      strokeDasharray="6 3"
+                      pointerEvents="none"
+                    />
+                  )}
+                </>
+              );
+
+              // Wrap with nested <g> elements for animation layering
+              for (let i = wrapperClasses.length - 1; i >= 0; i--) {
+                content = <g className={wrapperClasses[i]} style={{ transformOrigin: origin }}>{content}</g>;
+              }
+
+              return (
+                <g
+                  key={layer.id}
+                  onPointerDown={(e) => handlePointerDown(e, layer.id)}
+                  style={{ cursor: "grab" }}
+                >
+                  {content}
+                </g>
+              );
+            })}
           </svg>
         </div>
       </div>
