@@ -98,14 +98,16 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
             <div className="w-8 h-8 rounded bg-secondary flex-shrink-0 overflow-hidden border border-border">
               <img src={layer.imageDataUrl} alt={layer.name} className="w-full h-full object-contain" />
             </div>
-            <div className="flex-1 min-w-0 flex items-center gap-1.5">
+            <div className="flex-1 min-w-0">
               <p className={`text-sm truncate ${layer.exportExcluded ? "text-muted-foreground line-through" : "text-foreground"}`}>{layer.name}</p>
-              {hasAnimation(layer.id) && (
-                <span className="text-[10px] text-primary font-mono whitespace-nowrap">● 動畫</span>
-              )}
-              {(layer.flipH || layer.flipV) && (
-                <span className="text-[10px] text-accent-foreground font-mono whitespace-nowrap">⇄</span>
-              )}
+              <div className="flex items-center gap-1.5">
+                {hasAnimation(layer.id) && (
+                  <span className="text-[10px] text-primary font-mono whitespace-nowrap">● 動畫</span>
+                )}
+                {(layer.flipH || layer.flipV) && (
+                  <span className="text-[10px] text-accent-foreground font-mono whitespace-nowrap">⇄ 鏡射</span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
               {onReplaceLayerImage && (
