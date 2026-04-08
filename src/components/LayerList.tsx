@@ -17,7 +17,7 @@ interface LayerListProps {
   onReplaceLayerImage?: (id: string, file: File) => void;
 }
 
-export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer }: LayerListProps) {
+export function LayerList({ layers, selectedId, animations, onSelect, onToggleVisibility, onReorder, onAddImage, onDuplicateLayer, onToggleExportExclude, onDeleteLayer, onReplaceLayerImage }: LayerListProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
