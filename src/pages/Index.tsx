@@ -377,7 +377,6 @@ export default function Index() {
             onDeleteLayer={deleteLayer}
             onReplaceLayerImage={replaceLayerImage}
           />
-          />
         </div>
 
         <SvgPreview
