@@ -120,6 +120,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   }, []);
 
   const handlePointerDown = useCallback((e: React.PointerEvent, layerId: string) => {
+    if (spaceHeld) return; // pan mode, don't drag layers
     e.stopPropagation();
     const layer = layers.find((l) => l.id === layerId);
     if (!layer) return;
