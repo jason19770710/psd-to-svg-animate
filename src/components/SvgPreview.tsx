@@ -202,6 +202,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
               );
             })}
           </svg>
+          </div>
         </div>
       </div>
     </div>
