@@ -35,9 +35,6 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     setZoom(Math.min(scaleX, scaleY, 1));
   }, [canvasWidth, canvasHeight]);
 
-  useEffect(() => {
-    fitToScreen();
-  }, [fitToScreen]);
 
   const zoomIn = () => {
     setZoom((z) => {
