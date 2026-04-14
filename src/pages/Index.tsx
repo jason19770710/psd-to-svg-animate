@@ -162,6 +162,13 @@ export default function Index() {
     }
   }, [saveSnapshot]);
 
+  const deduplicateName = useCallback((name: string, existingNames: string[]): string => {
+    if (!existingNames.includes(name)) return name;
+    let i = 2;
+    while (existingNames.includes(`${name}_${i}`)) i++;
+    return `${name}_${i}`;
+  }, []);
+
   const addImageDirectly = useCallback(async (file: File) => {
     if (file.name.toLowerCase().endsWith(".psd")) {
       const reader = new FileReader();
@@ -170,7 +177,15 @@ export default function Index() {
           try {
             saveSnapshot();
             const result = await parsePsdFile(reader.result);
-            setLayers((prev) => [...result.layers, ...prev]);
+            setLayers((prev) => {
+              const existingNames = prev.map((l) => l.name);
+              const renamedLayers = result.layers.map((l) => {
+                const newName = deduplicateName(l.name, existingNames);
+                existingNames.push(newName);
+                return newName !== l.name ? { ...l, name: newName } : l;
+              });
+              return [...renamedLayers, ...prev];
+            });
             setAnimations((prev) => {
               const newAnims = { ...prev };
               result.layers.forEach((l) => {
@@ -191,14 +206,18 @@ export default function Index() {
     try {
       saveSnapshot();
       const layer = await loadImageAsLayer(file);
-      setLayers((prev) => [layer, ...prev]);
+      setLayers((prev) => {
+        const existingNames = prev.map((l) => l.name);
+        const newName = deduplicateName(layer.name, existingNames);
+        return [newName !== layer.name ? { ...layer, name: newName } : layer, ...prev];
+      });
       setAnimations((prev) => ({ ...prev, [layer.id]: { ...defaultAnimationConfig } }));
       setSelectedId(layer.id);
       toast.success(`已加入圖層: ${layer.name}`);
     } catch {
       toast.error(`無法載入圖片: ${file.name}`);
     }
-  }, [saveSnapshot]);
+  }, [saveSnapshot, deduplicateName]);
 
   const checkImageSize = useCallback((file: File): Promise<{ width: number; height: number }> => {
     return new Promise((resolve, reject) => {
