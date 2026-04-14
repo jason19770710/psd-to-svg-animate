@@ -61,8 +61,8 @@ export async function parsePsdFile(buffer: ArrayBuffer): Promise<ParsedPsd> {
   psd.parse();
 
   const tree = psd.tree();
-  const width = psd.header.cols;
-  const height = psd.header.rows;
+  const width = psd.header.width;
+  const height = psd.header.height;
   const layers: LayerInfo[] = [];
 
   const descendants = tree.descendants();
