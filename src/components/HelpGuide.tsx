@@ -1,4 +1,4 @@
-import { Mouse, Download, Layers, Plus, Copy, Trash2, RotateCw, ZoomIn, Palette, Eye, Replace, HelpCircle, GripVertical, Ban, Undo2, Redo2, Move, Blend, FlipHorizontal, ChevronDown } from "lucide-react";
+import { Mouse, Download, Layers, Plus, Copy, Trash2, RotateCw, ZoomIn, Palette, Eye, Replace, HelpCircle, GripVertical, Ban, Undo2, Redo2, Move, Blend, FlipHorizontal, ChevronDown, Maximize } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
