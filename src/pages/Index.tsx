@@ -127,6 +127,7 @@ export default function Index() {
     setPsdFilename(baseName);
     setLoading(true);
     try {
+      saveSnapshot();
       const result = await parsePsdFile(buffer);
       setLayers(result.layers);
       const anims: Record<string, AnimationConfig> = {};
@@ -142,11 +143,12 @@ export default function Index() {
       toast.error("PSD 檔案解析失敗");
     }
     setLoading(false);
-  }, []);
+  }, [saveSnapshot]);
 
 
   const handleSvgLoad = useCallback((svgText: string, filename: string) => {
     try {
+      saveSnapshot();
       const result = importSvg(svgText);
       setLayers(result.layers);
       setAnimations(result.animations);
@@ -158,7 +160,7 @@ export default function Index() {
     } catch {
       toast.error("SVG 檔案解析失敗");
     }
-  }, []);
+  }, [saveSnapshot]);
 
   const addImageDirectly = useCallback(async (file: File) => {
     if (file.name.toLowerCase().endsWith(".psd")) {
