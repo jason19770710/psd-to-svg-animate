@@ -166,6 +166,7 @@ export default function Index() {
       reader.onload = async () => {
         if (reader.result instanceof ArrayBuffer) {
           try {
+            saveSnapshot();
             const result = await parsePsdFile(reader.result);
             setLayers((prev) => [...result.layers, ...prev]);
             setAnimations((prev) => {
@@ -186,6 +187,7 @@ export default function Index() {
     }
 
     try {
+      saveSnapshot();
       const layer = await loadImageAsLayer(file);
       setLayers((prev) => [layer, ...prev]);
       setAnimations((prev) => ({ ...prev, [layer.id]: { ...defaultAnimationConfig } }));
@@ -194,7 +196,7 @@ export default function Index() {
     } catch {
       toast.error(`無法載入圖片: ${file.name}`);
     }
-  }, []);
+  }, [saveSnapshot]);
 
   const checkImageSize = useCallback((file: File): Promise<{ width: number; height: number }> => {
     return new Promise((resolve, reject) => {
