@@ -104,6 +104,7 @@ export default function Index() {
     return () => window.removeEventListener('keydown', handler);
   }, [handleUndo, handleRedo]);
 
+  const handleFileLoad = useCallback(async (buffer: ArrayBuffer, filename: string) => {
     const baseName = filename.replace(/\.psd$/i, "");
     setPsdFilename(baseName);
     setLoading(true);
