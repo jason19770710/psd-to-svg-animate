@@ -12,8 +12,6 @@ export interface LayerInfo {
   flipV?: boolean;
 }
 
-export type MovementDirection = "up" | "down" | "left" | "right" | "up-left" | "up-right" | "down-left" | "down-right";
-
 export interface AnimationConfig {
   scale: {
     enabled: boolean;
@@ -23,7 +21,7 @@ export interface AnimationConfig {
   };
   movement: {
     enabled: boolean;
-    direction: MovementDirection;
+    angle: number;    // 0-360 degrees (0=up, 90=right, 180=down, 270=left)
     distance: number; // px
     speed: number;
     loop: boolean;
