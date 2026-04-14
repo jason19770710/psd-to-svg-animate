@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { PsdDropZone } from "@/components/PsdDropZone";
 import { LayerList } from "@/components/LayerList";
 import { AnimationPanel } from "@/components/AnimationPanel";
@@ -8,9 +8,16 @@ import { parsePsdFile } from "@/lib/psd-parser";
 import { exportSvg, exportHtml } from "@/lib/svg-export";
 import { importSvg } from "@/lib/svg-import";
 import { LayerInfo, AnimationConfig, defaultAnimationConfig } from "@/types/psd";
-import { Download, FileImage, Loader2 } from "lucide-react";
+import { Download, FileImage, Loader2, Undo2, Redo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useUndo } from "@/hooks/use-undo";
+
+interface AppState {
+  layers: LayerInfo[];
+  animations: Record<string, AnimationConfig>;
+  selectedId: string | null;
+}
 
 let imageCounter = 0;
 
