@@ -12,6 +12,8 @@ import { Download, FileImage, Loader2, Undo2, Redo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUndo } from "@/hooks/use-undo";
+import { HelpGuide } from "@/components/HelpGuide";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 interface AppState {
   layers: LayerInfo[];
@@ -443,19 +445,29 @@ export default function Index() {
 
       <div className="flex flex-1 overflow-hidden">
         <div className="w-64 border-r border-border bg-card flex-shrink-0 overflow-hidden flex flex-col">
-          <LayerList
-            layers={layers}
-            selectedId={selectedId}
-            animations={animations}
-            onSelect={setSelectedId}
-            onToggleVisibility={toggleVisibility}
-            onReorder={reorderLayers}
-            onAddImage={handleAddImage}
-            onDuplicateLayer={duplicateLayer}
-            onToggleExportExclude={toggleExportExclude}
-            onDeleteLayer={deleteLayer}
-            onReplaceLayerImage={replaceLayerImage}
-          />
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel defaultSize={65} minSize={30}>
+              <div className="h-full overflow-hidden flex flex-col">
+                <LayerList
+                  layers={layers}
+                  selectedId={selectedId}
+                  animations={animations}
+                  onSelect={setSelectedId}
+                  onToggleVisibility={toggleVisibility}
+                  onReorder={reorderLayers}
+                  onAddImage={handleAddImage}
+                  onDuplicateLayer={duplicateLayer}
+                  onToggleExportExclude={toggleExportExclude}
+                  onDeleteLayer={deleteLayer}
+                  onReplaceLayerImage={replaceLayerImage}
+                />
+              </div>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel defaultSize={35} minSize={15}>
+              <HelpGuide />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
 
         <SvgPreview
