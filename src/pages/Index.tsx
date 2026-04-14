@@ -65,28 +65,29 @@ export default function Index() {
 
   const { pushSnapshot, undo, redo, canUndo, canRedo, clear: clearHistory } = useUndo<AppState>();
 
-  // Helper: save current state before a mutation
+  // Use refs so snapshot/undo/redo always read fresh state
+  const stateRef = useRef<AppState>({ layers: [], animations: {}, selectedId: null });
+  stateRef.current = { layers, animations, selectedId };
+
   const saveSnapshot = useCallback(() => {
-    pushSnapshot({ layers, animations, selectedId });
-  }, [layers, animations, selectedId, pushSnapshot]);
+    pushSnapshot(stateRef.current);
+  }, [pushSnapshot]);
+
+  const applyState = useCallback((s: AppState) => {
+    setLayers(s.layers);
+    setAnimations(s.animations);
+    setSelectedId(s.selectedId);
+  }, []);
 
   const handleUndo = useCallback(() => {
-    const prev = undo({ layers, animations, selectedId });
-    if (prev) {
-      setLayers(prev.layers);
-      setAnimations(prev.animations);
-      setSelectedId(prev.selectedId);
-    }
-  }, [layers, animations, selectedId, undo]);
+    const prev = undo(stateRef.current);
+    if (prev) applyState(prev);
+  }, [undo, applyState]);
 
   const handleRedo = useCallback(() => {
-    const next = redo({ layers, animations, selectedId });
-    if (next) {
-      setLayers(next.layers);
-      setAnimations(next.animations);
-      setSelectedId(next.selectedId);
-    }
-  }, [layers, animations, selectedId, redo]);
+    const next = redo(stateRef.current);
+    if (next) applyState(next);
+  }, [redo, applyState]);
 
   // Keyboard shortcuts: Ctrl/Cmd+Z = undo, Ctrl/Cmd+Shift+Z = redo
   useEffect(() => {
