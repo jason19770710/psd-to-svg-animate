@@ -222,24 +222,29 @@ export default function Index() {
   }, [layers, animations, canvasSize]);
 
   const toggleVisibility = useCallback((id: string) => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l)));
-  }, []);
+  }, [saveSnapshot]);
 
   const updateAnimation = useCallback((id: string, config: AnimationConfig) => {
+    saveSnapshot();
     setAnimations((prev) => ({ ...prev, [id]: config }));
-  }, []);
+  }, [saveSnapshot]);
 
   const moveLayer = useCallback((id: string, left: number, top: number) => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, left, top } : l)));
-  }, []);
+  }, [saveSnapshot]);
 
   const reorderLayers = useCallback((newLayers: LayerInfo[]) => {
+    saveSnapshot();
     setLayers(newLayers);
-  }, []);
+  }, [saveSnapshot]);
 
   const duplicateLayer = useCallback((id: string) => {
     const source = layers.find((l) => l.id === id);
     if (!source) return;
+    saveSnapshot();
     const newId = `copy-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const copy: LayerInfo = { ...source, id: newId, name: `${source.name} 副本` };
     const idx = layers.indexOf(source);
@@ -249,20 +254,23 @@ export default function Index() {
     setAnimations((prev) => ({ ...prev, [newId]: { ...(prev[id] || defaultAnimationConfig) } }));
     setSelectedId(newId);
     toast.success(`已複製圖層: ${source.name}`);
-  }, [layers]);
+  }, [layers, saveSnapshot]);
 
   const toggleExportExclude = useCallback((id: string) => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, exportExcluded: !l.exportExcluded } : l)));
-  }, []);
+  }, [saveSnapshot]);
 
   const flipLayer = useCallback((id: string, axis: "h" | "v") => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => {
       if (l.id !== id) return l;
       return axis === "h" ? { ...l, flipH: !l.flipH } : { ...l, flipV: !l.flipV };
     }));
-  }, []);
+  }, [saveSnapshot]);
 
   const deleteLayer = useCallback((id: string) => {
+    saveSnapshot();
     setLayers((prev) => {
       const newLayers = prev.filter((l) => l.id !== id);
       if (selectedId === id) {
@@ -276,13 +284,14 @@ export default function Index() {
       return newAnims;
     });
     toast.success("已刪除圖層");
-  }, [selectedId]);
+  }, [selectedId, saveSnapshot]);
 
   const replaceLayerImage = useCallback((id: string, file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
       img.onload = () => {
+        saveSnapshot();
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
@@ -298,7 +307,7 @@ export default function Index() {
       img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [saveSnapshot]);
 
   const selectedLayer = layers.find((l) => l.id === selectedId);
 
