@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
 import { generateAnimationCSS, buildLayerSvgElements } from "@/lib/svg-export";
 import { Button } from "@/components/ui/button";
