@@ -1,4 +1,4 @@
-import { Mouse, Download, Layers, Plus, Copy, Trash2, RotateCw, ZoomIn, Palette, Eye, Replace, HelpCircle, GripVertical, Ban, Undo2, Redo2, Move, Blend, FlipHorizontal, ChevronDown } from "lucide-react";
+import { Mouse, Download, Layers, Plus, Copy, Trash2, RotateCw, ZoomIn, Palette, Eye, Replace, HelpCircle, GripVertical, Ban, Undo2, Redo2, Move, Blend, FlipHorizontal, ChevronDown, Maximize } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
@@ -22,6 +22,8 @@ const sections: HelpSection[] = [
       { icon: <Mouse className="h-3 w-3" />, text: "點擊圖層 → 選取並顯示邊框" },
       { icon: <Move className="h-3 w-3" />, text: "拖拽圖層 → 移動位置" },
       { icon: <ZoomIn className="h-3 w-3" />, text: "滾輪 → 縮放舞台" },
+      { icon: <ZoomIn className="h-3 w-3" />, text: "+/− 按鈕 → 逐級放大/縮小" },
+      { icon: <Maximize className="h-3 w-3" />, text: "適應畫面 → 自動縮放至最佳比例" },
     ],
   },
   {
