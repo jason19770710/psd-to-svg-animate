@@ -129,7 +129,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     dragRef.current = { id: layerId, startX: coords.x, startY: coords.y, origLeft: layer.left, origTop: layer.top };
     (e.target as Element).setPointerCapture(e.pointerId);
     onSelectLayer(layerId);
-  }, [layers, toSvgCoords, onSelectLayer, onMoveStart]);
+  }, [layers, toSvgCoords, onSelectLayer, onMoveStart, spaceHeld]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return;
