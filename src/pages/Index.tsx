@@ -1,4 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { PsdDropZone } from "@/components/PsdDropZone";
 import { LayerList } from "@/components/LayerList";
 import { AnimationPanel } from "@/components/AnimationPanel";
@@ -64,6 +74,11 @@ export default function Index() {
   const [loaded, setLoaded] = useState(false);
   const [psdFilename, setPsdFilename] = useState("animated");
   const [exportOpen, setExportOpen] = useState(false);
+  const [oversizeWarning, setOversizeWarning] = useState<{
+    files: File[];
+    details: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   const { pushSnapshot, undo, redo, canUndo, canRedo, clear: clearHistory } = useUndo<AppState>();
 
