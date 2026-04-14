@@ -22,6 +22,8 @@ const sections: HelpSection[] = [
       { icon: <Mouse className="h-3 w-3" />, text: "點擊圖層 → 選取並顯示邊框" },
       { icon: <Move className="h-3 w-3" />, text: "拖拽圖層 → 移動位置" },
       { icon: <ZoomIn className="h-3 w-3" />, text: "滾輪 → 縮放舞台" },
+      { icon: <ZoomIn className="h-3 w-3" />, text: "+/− 按鈕 → 逐級放大/縮小" },
+      { icon: <Maximize className="h-3 w-3" />, text: "適應畫面 → 自動縮放至最佳比例" },
     ],
   },
   {
