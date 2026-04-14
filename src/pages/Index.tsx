@@ -382,7 +382,28 @@ export default function Index() {
         <div className="flex items-center gap-2">
           <FileImage className="h-5 w-5 text-primary" />
           <span className="font-mono text-sm font-semibold text-foreground">PSD → SVG</span>
-        </div>
+          <div className="flex items-center gap-0.5 ml-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleUndo}
+              disabled={!canUndo()}
+              className="h-7 w-7 p-0"
+              title="復原 (Ctrl+Z)"
+            >
+              <Undo2 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRedo}
+              disabled={!canRedo()}
+              className="h-7 w-7 p-0"
+              title="重做 (Ctrl+Shift+Z)"
+            >
+              <Redo2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
             <span>舞台</span>
