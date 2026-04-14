@@ -408,6 +408,17 @@ export default function Index() {
   const selectedLayer = layers.find((l) => l.id === selectedId);
 
 
+  if (!loaded) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
+        <div className="flex items-center gap-3">
+          <FileImage className="h-8 w-8 text-primary" />
+          <h1 className="text-2xl font-bold text-foreground font-mono">PSD 動態 SVG 產生器</h1>
+        </div>
+        <p className="text-muted-foreground text-sm text-center max-w-md">
+          上傳 PSD 檔案，為每個圖層設定動畫效果，然後導出為帶有內嵌 CSS 動畫的 SVG 檔案。
+        </p>
+
         <div className="w-full max-w-lg">
           {loading ? (
             <div className="flex flex-col items-center gap-3 py-12">
