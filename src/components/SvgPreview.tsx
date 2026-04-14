@@ -195,9 +195,27 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
             width={canvasWidth}
             height={canvasHeight}
             className="border border-border rounded"
-            style={{ background: 'transparent', display: 'block' }}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
+            style={{ background: 'transparent', display: 'block', cursor: spaceHeld || isPanning ? 'grab' : 'default' }}
+            onPointerDown={(e) => {
+              // If clicking on SVG background (not a layer), start panning
+              if (e.target === svgRef.current || spaceHeld) {
+                handlePanStart(e);
+              }
+            }}
+            onPointerMove={(e) => {
+              if (panRef.current) {
+                handlePanMove(e);
+              } else {
+                handlePointerMove(e);
+              }
+            }}
+            onPointerUp={(e) => {
+              if (panRef.current) {
+                handlePanEnd();
+              } else {
+                handlePointerUp();
+              }
+            }}
           >
             <defs>
               <style>{css}</style>
