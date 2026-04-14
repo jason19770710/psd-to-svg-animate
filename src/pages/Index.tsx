@@ -12,6 +12,8 @@ import { Download, FileImage, Loader2, Undo2, Redo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useUndo } from "@/hooks/use-undo";
+import { HelpGuide } from "@/components/HelpGuide";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 interface AppState {
   layers: LayerInfo[];
