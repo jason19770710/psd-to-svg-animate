@@ -1,5 +1,7 @@
-import { Keyboard, Mouse, Download, Layers, Plus, Copy, Trash2, RotateCw, ZoomIn, Palette, Eye, EyeOff, Replace, HelpCircle, GripVertical, Ban, Undo2, Redo2, Move, Blend, FlipHorizontal } from "lucide-react";
+import { Mouse, Download, Layers, Plus, Copy, Trash2, RotateCw, ZoomIn, Palette, Eye, Replace, HelpCircle, GripVertical, Ban, Undo2, Redo2, Move, Blend, FlipHorizontal, ChevronDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
 
 interface HelpItem {
   icon: React.ReactNode;
@@ -66,6 +68,12 @@ const sections: HelpSection[] = [
 ];
 
 export function HelpGuide() {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  const toggle = (title: string) => {
+    setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-1.5 px-3 py-2 border-t border-border">
@@ -73,22 +81,25 @@ export function HelpGuide() {
         <span className="text-xs font-medium text-muted-foreground">操作說明</span>
       </div>
       <ScrollArea className="flex-1 px-3 pb-2">
-        <div className="space-y-2.5">
+        <div className="space-y-1">
           {sections.map((s) => (
-            <div key={s.title}>
-              <div className="flex items-center gap-1.5 mb-1">
+            <Collapsible key={s.title} open={!!openSections[s.title]} onOpenChange={() => toggle(s.title)}>
+              <CollapsibleTrigger className="flex items-center gap-1.5 w-full py-1 hover:bg-accent/50 rounded px-1 transition-colors">
                 {s.icon}
-                <span className="text-xs font-semibold text-foreground">{s.title}</span>
-              </div>
-              <ul className="space-y-0.5 pl-2">
-                {s.items.map((item, i) => (
-                  <li key={i} className="flex items-center gap-1.5 text-[11px] text-muted-foreground leading-relaxed">
-                    <span className="flex-shrink-0 text-muted-foreground/70">{item.icon}</span>
-                    {item.text}
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <span className="text-xs font-semibold text-foreground flex-1 text-left">{s.title}</span>
+                <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${openSections[s.title] ? "rotate-180" : ""}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ul className="space-y-0.5 pl-2 pb-1">
+                  {s.items.map((item, i) => (
+                    <li key={i} className="flex items-center gap-1.5 text-[11px] text-muted-foreground leading-relaxed">
+                      <span className="flex-shrink-0 text-muted-foreground/70">{item.icon}</span>
+                      {item.text}
+                    </li>
+                  ))}
+                </ul>
+              </CollapsibleContent>
+            </Collapsible>
           ))}
         </div>
       </ScrollArea>
