@@ -232,9 +232,8 @@ export default function Index() {
   }, [saveSnapshot]);
 
   const moveLayer = useCallback((id: string, left: number, top: number) => {
-    saveSnapshot();
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, left, top } : l)));
-  }, [saveSnapshot]);
+  }, []);
 
   const reorderLayers = useCallback((newLayers: LayerInfo[]) => {
     saveSnapshot();
@@ -467,6 +466,7 @@ export default function Index() {
           selectedId={selectedId}
           onSelectLayer={setSelectedId}
           onMoveLayer={moveLayer}
+          onMoveStart={saveSnapshot}
         />
 
         <div className="w-72 border-l border-border bg-card flex-shrink-0 overflow-hidden flex flex-col">
