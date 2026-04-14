@@ -118,18 +118,18 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
 
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto flex items-center justify-center bg-[hsl(220,14%,8%)] relative"
+        className="flex-1 overflow-auto bg-[hsl(220,14%,8%)] relative"
         onWheel={handleWheel}
       >
         {/* Checkerboard background */}
-        <div className="absolute inset-0 opacity-[0.03]"
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{
             backgroundImage: `linear-gradient(45deg, #fff 25%, transparent 25%), linear-gradient(-45deg, #fff 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #fff 75%), linear-gradient(-45deg, transparent 75%, #fff 75%)`,
             backgroundSize: '20px 20px',
             backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
           }}
         />
-        <div className="p-4 flex-shrink-0" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
+        <div className="p-4 flex-shrink-0" style={{ margin: 'auto', width: 'fit-content', transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
           <svg
             ref={svgRef}
             viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
