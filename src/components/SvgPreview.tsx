@@ -213,12 +213,6 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
           <Maximize className="h-3.5 w-3.5" />
         </Button>
       </div>
-      {/* 操作說明 */}
-      <div className="absolute bottom-3 right-3 z-10 bg-card/70 backdrop-blur border border-border rounded-md px-3 py-1.5 text-[11px] text-muted-foreground select-none space-y-0.5">
-        <div>🖱️ 滾輪：縮放舞台</div>
-        <div>🖱️ 左鍵拖曳空白處：平移畫布</div>
-        <div>🖱️ 左鍵拖曳圖層：移動圖層</div>
-      </div>
 
       <div
         ref={containerRef}
