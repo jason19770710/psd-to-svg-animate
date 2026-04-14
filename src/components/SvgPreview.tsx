@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useRef, useEffect } from "react";
+import { useMemo, useState, useCallback, useRef } from "react";
 import { LayerInfo, AnimationConfig } from "@/types/psd";
 import { generateAnimationCSS, buildLayerSvgElements } from "@/lib/svg-export";
 import { Button } from "@/components/ui/button";
@@ -35,9 +35,6 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     setZoom(Math.min(scaleX, scaleY, 1));
   }, [canvasWidth, canvasHeight]);
 
-  useEffect(() => {
-    fitToScreen();
-  }, [fitToScreen]);
 
   const zoomIn = () => {
     setZoom((z) => {
