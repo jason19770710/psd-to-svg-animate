@@ -163,7 +163,11 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
       <div
         ref={containerRef}
         className="flex-1 overflow-auto bg-[hsl(220,14%,8%)] relative"
+        style={{ cursor: spaceHeld || isPanning ? 'grab' : undefined }}
         onWheel={handleWheel}
+        onPointerDown={handlePanStart}
+        onPointerMove={(e) => { handlePanMove(e); }}
+        onPointerUp={handlePanEnd}
       >
         {/* Checkerboard background */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
