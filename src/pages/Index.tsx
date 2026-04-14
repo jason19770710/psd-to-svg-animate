@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { PsdDropZone } from "@/components/PsdDropZone";
 import { LayerList } from "@/components/LayerList";
 import { AnimationPanel } from "@/components/AnimationPanel";
@@ -8,9 +8,16 @@ import { parsePsdFile } from "@/lib/psd-parser";
 import { exportSvg, exportHtml } from "@/lib/svg-export";
 import { importSvg } from "@/lib/svg-import";
 import { LayerInfo, AnimationConfig, defaultAnimationConfig } from "@/types/psd";
-import { Download, FileImage, Loader2 } from "lucide-react";
+import { Download, FileImage, Loader2, Undo2, Redo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useUndo } from "@/hooks/use-undo";
+
+interface AppState {
+  layers: LayerInfo[];
+  animations: Record<string, AnimationConfig>;
+  selectedId: string | null;
+}
 
 let imageCounter = 0;
 
@@ -55,6 +62,48 @@ export default function Index() {
   const [loaded, setLoaded] = useState(false);
   const [psdFilename, setPsdFilename] = useState("animated");
   const [exportOpen, setExportOpen] = useState(false);
+
+  const { pushSnapshot, undo, redo, canUndo, canRedo, clear: clearHistory } = useUndo<AppState>();
+
+  // Use refs so snapshot/undo/redo always read fresh state
+  const stateRef = useRef<AppState>({ layers: [], animations: {}, selectedId: null });
+  stateRef.current = { layers, animations, selectedId };
+
+  const saveSnapshot = useCallback(() => {
+    pushSnapshot(stateRef.current);
+  }, [pushSnapshot]);
+
+  const applyState = useCallback((s: AppState) => {
+    setLayers(s.layers);
+    setAnimations(s.animations);
+    setSelectedId(s.selectedId);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    const prev = undo(stateRef.current);
+    if (prev) applyState(prev);
+  }, [undo, applyState]);
+
+  const handleRedo = useCallback(() => {
+    const next = redo(stateRef.current);
+    if (next) applyState(next);
+  }, [redo, applyState]);
+
+  // Keyboard shortcuts: Ctrl/Cmd+Z = undo, Ctrl/Cmd+Shift+Z = redo
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleUndo, handleRedo]);
 
   const handleFileLoad = useCallback(async (buffer: ArrayBuffer, filename: string) => {
     const baseName = filename.replace(/\.psd$/i, "");
@@ -173,24 +222,29 @@ export default function Index() {
   }, [layers, animations, canvasSize]);
 
   const toggleVisibility = useCallback((id: string) => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l)));
-  }, []);
+  }, [saveSnapshot]);
 
   const updateAnimation = useCallback((id: string, config: AnimationConfig) => {
+    saveSnapshot();
     setAnimations((prev) => ({ ...prev, [id]: config }));
-  }, []);
+  }, [saveSnapshot]);
 
   const moveLayer = useCallback((id: string, left: number, top: number) => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, left, top } : l)));
-  }, []);
+  }, [saveSnapshot]);
 
   const reorderLayers = useCallback((newLayers: LayerInfo[]) => {
+    saveSnapshot();
     setLayers(newLayers);
-  }, []);
+  }, [saveSnapshot]);
 
   const duplicateLayer = useCallback((id: string) => {
     const source = layers.find((l) => l.id === id);
     if (!source) return;
+    saveSnapshot();
     const newId = `copy-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const copy: LayerInfo = { ...source, id: newId, name: `${source.name} 副本` };
     const idx = layers.indexOf(source);
@@ -200,20 +254,23 @@ export default function Index() {
     setAnimations((prev) => ({ ...prev, [newId]: { ...(prev[id] || defaultAnimationConfig) } }));
     setSelectedId(newId);
     toast.success(`已複製圖層: ${source.name}`);
-  }, [layers]);
+  }, [layers, saveSnapshot]);
 
   const toggleExportExclude = useCallback((id: string) => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, exportExcluded: !l.exportExcluded } : l)));
-  }, []);
+  }, [saveSnapshot]);
 
   const flipLayer = useCallback((id: string, axis: "h" | "v") => {
+    saveSnapshot();
     setLayers((prev) => prev.map((l) => {
       if (l.id !== id) return l;
       return axis === "h" ? { ...l, flipH: !l.flipH } : { ...l, flipV: !l.flipV };
     }));
-  }, []);
+  }, [saveSnapshot]);
 
   const deleteLayer = useCallback((id: string) => {
+    saveSnapshot();
     setLayers((prev) => {
       const newLayers = prev.filter((l) => l.id !== id);
       if (selectedId === id) {
@@ -227,13 +284,14 @@ export default function Index() {
       return newAnims;
     });
     toast.success("已刪除圖層");
-  }, [selectedId]);
+  }, [selectedId, saveSnapshot]);
 
   const replaceLayerImage = useCallback((id: string, file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
       img.onload = () => {
+        saveSnapshot();
         const canvas = document.createElement("canvas");
         canvas.width = img.width;
         canvas.height = img.height;
@@ -249,7 +307,7 @@ export default function Index() {
       img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
-  }, []);
+  }, [saveSnapshot]);
 
   const selectedLayer = layers.find((l) => l.id === selectedId);
 
@@ -324,6 +382,28 @@ export default function Index() {
         <div className="flex items-center gap-2">
           <FileImage className="h-5 w-5 text-primary" />
           <span className="font-mono text-sm font-semibold text-foreground">PSD → SVG</span>
+          <div className="flex items-center gap-0.5 ml-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleUndo}
+              disabled={!canUndo()}
+              className="h-7 w-7 p-0"
+              title="復原 (Ctrl+Z)"
+            >
+              <Undo2 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRedo}
+              disabled={!canRedo()}
+              className="h-7 w-7 p-0"
+              title="重做 (Ctrl+Shift+Z)"
+            >
+              <Redo2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
