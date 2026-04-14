@@ -177,9 +177,14 @@ export default function Index() {
           try {
             saveSnapshot();
             const result = await parsePsdFile(reader.result);
+            const uniqueSuffix = Date.now().toString(36);
+            const remappedLayers = result.layers.map((l, idx) => ({
+              ...l,
+              id: `layer-${uniqueSuffix}-${idx}`,
+            }));
             setLayers((prev) => {
               const existingNames = prev.map((l) => l.name);
-              const renamedLayers = result.layers.map((l) => {
+              const renamedLayers = remappedLayers.map((l) => {
                 const newName = deduplicateName(l.name, existingNames);
                 existingNames.push(newName);
                 return newName !== l.name ? { ...l, name: newName } : l;
@@ -188,7 +193,7 @@ export default function Index() {
             });
             setAnimations((prev) => {
               const newAnims = { ...prev };
-              result.layers.forEach((l) => {
+              remappedLayers.forEach((l) => {
                 newAnims[l.id] = { ...defaultAnimationConfig };
               });
               return newAnims;
