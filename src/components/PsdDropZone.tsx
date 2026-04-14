@@ -69,8 +69,12 @@ export function PsdDropZone({ onFileLoad, onSvgLoad }: PsdDropZoneProps) {
         )}
       </div>
       <div className="text-center">
-        <p className="text-foreground font-medium">拖拽檔案到此處</p>
+        <p className="text-foreground font-medium">拖曳檔案到此處</p>
         <p className="text-sm text-muted-foreground mt-1">支援 .psd 及 .svg 檔案</p>
+      </div>
+      <div className="text-left text-xs text-muted-foreground mt-2 space-y-1 max-w-sm">
+        <p>1. 需要先將 PSD 檔整理成一個圖層只有一個要作動態的元件。</p>
+        <p>2. 導出後的 SVG 檔，若有需要再修改時，可以再拖曳進去修改編輯。</p>
       </div>
     </div>
   );

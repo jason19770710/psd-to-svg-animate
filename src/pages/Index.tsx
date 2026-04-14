@@ -407,56 +407,6 @@ export default function Index() {
 
   const selectedLayer = layers.find((l) => l.id === selectedId);
 
-  const PRESETS = [
-    { label: "桌機版頭 2880×1620", w: 2880, h: 1620 },
-    { label: "手機版頭 1110×2405", w: 1110, h: 2405 },
-    { label: "版身標題 939×150", w: 939, h: 150 },
-  ];
-
-  if (!loaded) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
-        <div className="flex items-center gap-3">
-          <FileImage className="h-8 w-8 text-primary" />
-          <h1 className="text-2xl font-bold text-foreground font-mono">PSD 動態 SVG 產生器</h1>
-        </div>
-        <p className="text-muted-foreground text-sm text-center max-w-md">
-          上傳 PSD 檔案，為每個圖層設定動畫效果，然後導出為帶有內嵌 CSS 動畫的 SVG 檔案。
-        </p>
-
-        {/* Canvas size selection */}
-        <div className="w-full max-w-lg space-y-3">
-          <p className="text-sm font-medium text-foreground">舞台尺寸</p>
-          <div className="flex flex-wrap gap-2">
-            {PRESETS.map((p) => (
-              <Button
-                key={p.label}
-                variant={canvasSize.w === p.w && canvasSize.h === p.h ? "default" : "outline"}
-                size="sm"
-                className="text-xs font-mono whitespace-nowrap"
-                onClick={() => setCanvasSize({ w: p.w, h: p.h })}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">自訂</span>
-            <input
-              type="number"
-              value={canvasSize.w}
-              onChange={(e) => setCanvasSize((s) => ({ ...s, w: Math.max(1, Number(e.target.value) || 0) }))}
-              className="w-20 h-8 px-2 text-xs font-mono text-foreground bg-background border border-border rounded text-center"
-            />
-            <span className="text-xs text-muted-foreground">×</span>
-            <input
-              type="number"
-              value={canvasSize.h}
-              onChange={(e) => setCanvasSize((s) => ({ ...s, h: Math.max(1, Number(e.target.value) || 0) }))}
-              className="w-20 h-8 px-2 text-xs font-mono text-foreground bg-background border border-border rounded text-center"
-            />
-          </div>
-        </div>
 
         <div className="w-full max-w-lg">
           {loading ? (
