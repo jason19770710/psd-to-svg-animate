@@ -570,6 +570,22 @@ export default function Index() {
         defaultFilename={psdFilename}
         onExport={handleExport}
       />
+      <AlertDialog open={!!oversizeWarning} onOpenChange={(open) => { if (!open) setOversizeWarning(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>圖片尺寸超過舞台</AlertDialogTitle>
+            <AlertDialogDescription>
+              {oversizeWarning?.details}
+              <br />
+              是否仍要載入此圖片？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setOversizeWarning(null)}>取消載入</AlertDialogCancel>
+            <AlertDialogAction onClick={() => oversizeWarning?.onConfirm()}>確認載入</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
