@@ -63,7 +63,47 @@ export default function Index() {
   const [psdFilename, setPsdFilename] = useState("animated");
   const [exportOpen, setExportOpen] = useState(false);
 
-  const handleFileLoad = useCallback(async (buffer: ArrayBuffer, filename: string) => {
+  const { pushSnapshot, undo, redo, canUndo, canRedo, clear: clearHistory } = useUndo<AppState>();
+
+  // Helper: save current state before a mutation
+  const saveSnapshot = useCallback(() => {
+    pushSnapshot({ layers, animations, selectedId });
+  }, [layers, animations, selectedId, pushSnapshot]);
+
+  const handleUndo = useCallback(() => {
+    const prev = undo({ layers, animations, selectedId });
+    if (prev) {
+      setLayers(prev.layers);
+      setAnimations(prev.animations);
+      setSelectedId(prev.selectedId);
+    }
+  }, [layers, animations, selectedId, undo]);
+
+  const handleRedo = useCallback(() => {
+    const next = redo({ layers, animations, selectedId });
+    if (next) {
+      setLayers(next.layers);
+      setAnimations(next.animations);
+      setSelectedId(next.selectedId);
+    }
+  }, [layers, animations, selectedId, redo]);
+
+  // Keyboard shortcuts: Ctrl/Cmd+Z = undo, Ctrl/Cmd+Shift+Z = redo
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          handleRedo();
+        } else {
+          handleUndo();
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [handleUndo, handleRedo]);
+
     const baseName = filename.replace(/\.psd$/i, "");
     setPsdFilename(baseName);
     setLoading(true);
