@@ -404,6 +404,7 @@ export default function Index() {
               <Redo2 className="h-3.5 w-3.5" />
             </Button>
           </div>
+        </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
             <span>舞台</span>
