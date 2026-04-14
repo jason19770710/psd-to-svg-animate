@@ -52,19 +52,27 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     };
   }, []);
 
-  const handlePanStart = useCallback((e: React.PointerEvent) => {
+  const startPan = useCallback((clientX: number, clientY: number) => {
     const el = containerRef.current;
-    if (!el || (e.button !== 0 && e.button !== 1)) return;
+    if (!el) return;
 
-    e.preventDefault();
     panRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
+      startX: clientX,
+      startY: clientY,
       scrollLeft: el.scrollLeft,
       scrollTop: el.scrollTop,
     };
     setIsPanning(true);
   }, []);
+
+  const handlePanStart = useCallback((e: React.PointerEvent) => {
+    if (e.button !== 0 && e.button !== 1) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    startPan(e.clientX, e.clientY);
+    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+  }, [startPan]);
 
   const handlePanMove = useCallback((clientX: number, clientY: number) => {
     if (!panRef.current) return;
@@ -146,8 +154,29 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     return { x: svgPt.x, y: svgPt.y };
   }, []);
 
+  const isCanvasBackgroundLayer = useCallback((layer: LayerInfo) => {
+    return layer.left <= 0 && layer.top <= 0 && layer.left + layer.width >= canvasWidth && layer.top + layer.height >= canvasHeight;
+  }, [canvasWidth, canvasHeight]);
+
+  const shouldStartPanInSvg = useCallback((clientX: number, clientY: number) => {
+    if (spaceHeld) return true;
+
+    const { x, y } = toSvgCoords(clientX, clientY);
+
+    for (let i = renderLayers.length - 1; i >= 0; i--) {
+      const layer = renderLayers[i];
+      const hit = x >= layer.left && x <= layer.left + layer.width && y >= layer.top && y <= layer.top + layer.height;
+
+      if (hit) {
+        return isCanvasBackgroundLayer(layer);
+      }
+    }
+
+    return true;
+  }, [spaceHeld, toSvgCoords, renderLayers, isCanvasBackgroundLayer]);
+
   const handlePointerDown = useCallback((e: React.PointerEvent, layerId: string) => {
-    if (spaceHeld) return; // pan mode, don't drag layers
+    if (spaceHeld || isPanning) return;
     e.stopPropagation();
     const layer = layers.find((l) => l.id === layerId);
     if (!layer) return;
@@ -156,7 +185,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     dragRef.current = { id: layerId, startX: coords.x, startY: coords.y, origLeft: layer.left, origTop: layer.top };
     (e.target as Element).setPointerCapture(e.pointerId);
     onSelectLayer(layerId);
-  }, [layers, toSvgCoords, onSelectLayer, onMoveStart, spaceHeld]);
+  }, [layers, toSvgCoords, onSelectLayer, onMoveStart, spaceHeld, isPanning]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return;
@@ -172,7 +201,6 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
-      {/* Zoom controls */}
       <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-card/80 backdrop-blur border border-border rounded-md px-1 py-0.5">
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={zoomOut}>
           <ZoomOut className="h-3.5 w-3.5" />
@@ -195,98 +223,96 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
         onWheel={handleWheel}
         onPointerDown={handlePanStart}
       >
-        {/* Checkerboard background */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        <div
+          className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{
             backgroundImage: `linear-gradient(45deg, #fff 25%, transparent 25%), linear-gradient(-45deg, #fff 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #fff 75%), linear-gradient(-45deg, transparent 75%, #fff 75%)`,
-            backgroundSize: '20px 20px',
-            backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
+            backgroundSize: "20px 20px",
+            backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
           }}
         />
-        <div style={{
-          minWidth: '100%',
-          minHeight: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '16px',
-          /* Use explicit sizing so scrollbars appear when zoomed content exceeds container */
-          width: canvasWidth * zoom + 32 > (containerRef.current?.clientWidth ?? 0) ? canvasWidth * zoom + 32 : '100%',
-          height: canvasHeight * zoom + 32 > (containerRef.current?.clientHeight ?? 0) ? canvasHeight * zoom + 32 : '100%',
-        }}>
-          <div style={{ transform: `scale(${zoom})`, transformOrigin: 'center center', flexShrink: 0 }}>
-          <svg
-            ref={svgRef}
-            viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
-            width={canvasWidth}
-            height={canvasHeight}
-            className="border border-border rounded"
-            style={{ background: "transparent", display: "block", cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : "default" }}
-            onPointerDown={(e) => {
-              if (e.target === svgRef.current || spaceHeld) {
-                handlePanStart(e);
-              }
-            }}
-            onPointerMove={(e) => {
-              if (!panRef.current) {
-                handlePointerMove(e);
-              }
-            }}
-            onPointerUp={() => {
-              handlePointerUp();
-            }}
-          >
-            <defs>
-              <style>{css}</style>
-            </defs>
-            {renderLayers.map((layer) => {
-              const anim = animations[layer.id];
-              const { wrapperClasses, imageClass } = buildLayerSvgElements(layer, anim);
-              const origin = `${layer.left + layer.width / 2}px ${layer.top + layer.height / 2}px`;
+        <div
+          style={{
+            minWidth: "100%",
+            minHeight: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+            width: canvasWidth * zoom + 32 > (containerRef.current?.clientWidth ?? 0) ? canvasWidth * zoom + 32 : "100%",
+            height: canvasHeight * zoom + 32 > (containerRef.current?.clientHeight ?? 0) ? canvasHeight * zoom + 32 : "100%",
+          }}
+        >
+          <div style={{ transform: `scale(${zoom})`, transformOrigin: "center center", flexShrink: 0 }}>
+            <svg
+              ref={svgRef}
+              viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
+              width={canvasWidth}
+              height={canvasHeight}
+              className="border border-border rounded"
+              style={{ background: "transparent", display: "block", cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : "default" }}
+              onPointerDownCapture={(e) => {
+                if (shouldStartPanInSvg(e.clientX, e.clientY)) {
+                  handlePanStart(e);
+                }
+              }}
+              onPointerMove={(e) => {
+                if (!panRef.current) {
+                  handlePointerMove(e);
+                }
+              }}
+              onPointerUp={handlePointerUp}
+            >
+              <defs>
+                <style>{css}</style>
+              </defs>
+              {renderLayers.map((layer) => {
+                const anim = animations[layer.id];
+                const { wrapperClasses, imageClass } = buildLayerSvgElements(layer, anim);
+                const origin = `${layer.left + layer.width / 2}px ${layer.top + layer.height / 2}px`;
 
-              let content = (
-                <>
-                  <image
-                    href={layer.imageDataUrl}
-                    x={layer.left}
-                    y={layer.top}
-                    width={layer.width}
-                    height={layer.height}
-                    className={imageClass || undefined}
-                    style={{ transformOrigin: origin }}
-                  />
-                  {selectedId === layer.id && (
-                    <rect
-                      x={layer.left - 1}
-                      y={layer.top - 1}
-                      width={layer.width + 2}
-                      height={layer.height + 2}
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      strokeDasharray="6 3"
-                      pointerEvents="none"
+                let content = (
+                  <>
+                    <image
+                      href={layer.imageDataUrl}
+                      x={layer.left}
+                      y={layer.top}
+                      width={layer.width}
+                      height={layer.height}
+                      className={imageClass || undefined}
+                      style={{ transformOrigin: origin }}
                     />
-                  )}
-                </>
-              );
+                    {selectedId === layer.id && (
+                      <rect
+                        x={layer.left - 1}
+                        y={layer.top - 1}
+                        width={layer.width + 2}
+                        height={layer.height + 2}
+                        fill="none"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2}
+                        strokeDasharray="6 3"
+                        pointerEvents="none"
+                      />
+                    )}
+                  </>
+                );
 
-              // Wrap with nested <g> elements for animation layering
-              for (let i = wrapperClasses.length - 1; i >= 0; i--) {
-                content = <g className={wrapperClasses[i]} style={{ transformOrigin: origin }}>{content}</g>;
-              }
+                for (let i = wrapperClasses.length - 1; i >= 0; i--) {
+                  content = <g className={wrapperClasses[i]} style={{ transformOrigin: origin }}>{content}</g>;
+                }
 
-              return (
-                <g
-                  key={layer.id}
-                  onPointerDown={(e) => handlePointerDown(e, layer.id)}
-                  style={{ cursor: "grab" }}
-                >
-                  {content}
-                </g>
-              );
-            })}
-          </svg>
+                return (
+                  <g
+                    key={layer.id}
+                    onPointerDown={(e) => handlePointerDown(e, layer.id)}
+                    style={{ cursor: "grab" }}
+                  >
+                    {content}
+                  </g>
+                );
+              })}
+            </svg>
           </div>
         </div>
       </div>
