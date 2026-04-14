@@ -129,6 +129,7 @@ export default function Index() {
     try {
       saveSnapshot();
       const result = await parsePsdFile(buffer);
+      setCanvasSize({ w: result.width, h: result.height });
       setLayers(result.layers);
       const anims: Record<string, AnimationConfig> = {};
       result.layers.forEach((l) => {
