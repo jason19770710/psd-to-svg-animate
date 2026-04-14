@@ -1,8 +1,8 @@
-import { AnimationConfig } from "@/types/psd";
+import { AnimationConfig, MovementDirection } from "@/types/psd";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2, ZoomIn, ArrowUpDown, MoveHorizontal, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2 } from "lucide-react";
+import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AnimationPanelProps {
@@ -65,6 +65,17 @@ function LoopToggle({ loop, onChange }: { loop: boolean; onChange: (v: boolean) 
   );
 }
 
+const DIRECTION_OPTIONS: { value: MovementDirection; label: string }[] = [
+  { value: "up", label: "↑ 上" },
+  { value: "down", label: "↓ 下" },
+  { value: "left", label: "← 左" },
+  { value: "right", label: "→ 右" },
+  { value: "up-left", label: "↖ 左上" },
+  { value: "up-right", label: "↗ 右上" },
+  { value: "down-left", label: "↙ 左下" },
+  { value: "down-right", label: "↘ 右下" },
+];
+
 export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
 
@@ -112,24 +123,32 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
           <LoopToggle loop={config.scale.loop} onChange={(v) => update({ scale: { ...config.scale, loop: v } })} />
         </Section>
 
-        {/* Bounce */}
-        <Section icon={ArrowUpDown} title="跳動 Bounce" enabled={config.bounce.enabled}
-          onToggle={(v) => update({ bounce: { ...config.bounce, enabled: v } })}>
-          <SliderRow label="距離" value={config.bounce.distance} min={1} max={100} step={1} unit="px"
-            onChange={(v) => update({ bounce: { ...config.bounce, distance: v } })} />
-          <SliderRow label="速度" value={config.bounce.speed} min={0.1} max={5} step={0.1} unit="s"
-            onChange={(v) => update({ bounce: { ...config.bounce, speed: v } })} />
-          <LoopToggle loop={config.bounce.loop} onChange={(v) => update({ bounce: { ...config.bounce, loop: v } })} />
-        </Section>
-
-        {/* Move */}
-        <Section icon={MoveHorizontal} title="移動 Move" enabled={config.move.enabled}
-          onToggle={(v) => update({ move: { ...config.move, enabled: v } })}>
-          <SliderRow label="距離" value={config.move.distance} min={1} max={200} step={1} unit="px"
-            onChange={(v) => update({ move: { ...config.move, distance: v } })} />
-          <SliderRow label="速度" value={config.move.speed} min={0.1} max={5} step={0.1} unit="s"
-            onChange={(v) => update({ move: { ...config.move, speed: v } })} />
-          <LoopToggle loop={config.move.loop} onChange={(v) => update({ move: { ...config.move, loop: v } })} />
+        {/* Movement (merged bounce + move) */}
+        <Section icon={Move} title="移動 Movement" enabled={config.movement.enabled}
+          onToggle={(v) => update({ movement: { ...config.movement, enabled: v } })}>
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">方向</Label>
+            <div className="grid grid-cols-4 gap-1">
+              {DIRECTION_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => update({ movement: { ...config.movement, direction: opt.value } })}
+                  className={`text-xs py-1.5 px-1 rounded border transition-colors font-mono ${
+                    config.movement.direction === opt.value
+                      ? "border-primary bg-primary/20 text-primary"
+                      : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <SliderRow label="距離" value={config.movement.distance} min={1} max={200} step={1} unit="px"
+            onChange={(v) => update({ movement: { ...config.movement, distance: v } })} />
+          <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
+            onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
+          <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
         </Section>
 
         {/* Rotate */}

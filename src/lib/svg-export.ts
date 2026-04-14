@@ -1,4 +1,25 @@
-import { LayerInfo, AnimationConfig } from "@/types/psd";
+import { LayerInfo, AnimationConfig, MovementDirection } from "@/types/psd";
+
+function getMovementTranslate(direction: MovementDirection, distance: number): string {
+  const d = distance;
+  switch (direction) {
+    case "up": return `translateY(-${d}px)`;
+    case "down": return `translateY(${d}px)`;
+    case "left": return `translateX(-${d}px)`;
+    case "right": return `translateX(${d}px)`;
+    case "up-left": return `translate(-${d}px, -${d}px)`;
+    case "up-right": return `translate(${d}px, -${d}px)`;
+    case "down-left": return `translate(-${d}px, ${d}px)`;
+    case "down-right": return `translate(${d}px, ${d}px)`;
+  }
+}
+
+function getMovementTranslateZero(direction: MovementDirection): string {
+  const hasBoth = direction.includes("-");
+  if (hasBoth) return "translate(0, 0)";
+  if (direction === "up" || direction === "down") return "translateY(0)";
+  return "translateX(0)";
+}
 
 export function generateAnimationCSS(
   layers: LayerInfo[],
@@ -18,13 +39,12 @@ export function generateAnimationCSS(
     const flipPart = hasFlip ? `scale(${layer.flipH ? -1 : 1}, ${layer.flipV ? -1 : 1})` : "";
 
     const hasScale = anim.scale.enabled;
-    const hasBounce = anim.bounce.enabled;
-    const hasMove = anim.move.enabled;
+    const hasMovement = anim.movement?.enabled;
     const hasRotate = anim.rotate.enabled;
     const hasFade = anim.fade?.enabled;
     const hasColor = anim.colorShift?.enabled;
 
-    if (!hasScale && !hasBounce && !hasMove && !hasRotate && !hasFade && !hasColor && !hasFlip) continue;
+    if (!hasScale && !hasMovement && !hasRotate && !hasFade && !hasColor && !hasFlip) continue;
 
     // --- Flip (static transform on image element) ---
     if (hasFlip) {
@@ -42,19 +62,16 @@ export function generateAnimationCSS(
       css += `.layer-rot-${id} { transform-origin: ${origin}; animation: ${rName} ${anim.rotate.speed}s linear ${anim.rotate.loop ? "infinite" : "1"}; }\n`;
     }
 
-    // --- Oscillating transform (bounce + move + scale + alternate rotate) ---
+    // --- Oscillating transform (movement + scale + alternate rotate) ---
     const hasAlternateRotate = hasRotate && anim.rotate.mode === "alternate";
-    const hasOscTransform = hasScale || hasBounce || hasMove || hasAlternateRotate;
+    const hasOscTransform = hasScale || hasMovement || hasAlternateRotate;
 
     if (hasOscTransform) {
       const oName = `anim-osc-${id}`;
       const buildOsc = (phase: "start" | "mid") => {
         const parts: string[] = [];
-        if (hasBounce) {
-          parts.push(`translateY(${phase === "mid" ? `-${anim.bounce.distance}px` : "0"})`);
-        }
-        if (hasMove) {
-          parts.push(`translateX(${phase === "mid" ? `${anim.move.distance}px` : "0"})`);
+        if (hasMovement) {
+          parts.push(phase === "mid" ? getMovementTranslate(anim.movement.direction, anim.movement.distance) : getMovementTranslateZero(anim.movement.direction));
         }
         if (hasScale) {
           parts.push(`scale(${phase === "mid" ? anim.scale.value : 1})`);
@@ -68,14 +85,12 @@ export function generateAnimationCSS(
 
       const oscSpeeds: number[] = [];
       if (hasScale) oscSpeeds.push(anim.scale.speed);
-      if (hasBounce) oscSpeeds.push(anim.bounce.speed);
-      if (hasMove) oscSpeeds.push(anim.move.speed);
+      if (hasMovement) oscSpeeds.push(anim.movement.speed);
       if (hasAlternateRotate) oscSpeeds.push(anim.rotate.speed);
       const oscDuration = Math.max(...oscSpeeds);
 
       const anyOscLoop = (hasScale && anim.scale.loop) ||
-                         (hasBounce && anim.bounce.loop) ||
-                         (hasMove && anim.move.loop) ||
+                         (hasMovement && anim.movement.loop) ||
                          (hasAlternateRotate && anim.rotate.loop);
 
       css += `@keyframes ${oName} {
@@ -118,7 +133,7 @@ export function buildLayerSvgElements(layer: LayerInfo, anim: AnimationConfig | 
   const hasFlip = !!(layer.flipH || layer.flipV);
   const hasRotate = anim?.rotate?.enabled;
   const isContinuousRotate = hasRotate && anim?.rotate?.mode === "continuous";
-  const hasOscTransform = anim?.scale?.enabled || anim?.bounce?.enabled || anim?.move?.enabled ||
+  const hasOscTransform = anim?.scale?.enabled || anim?.movement?.enabled ||
     (hasRotate && anim?.rotate?.mode === "alternate");
   const hasFade = anim?.fade?.enabled;
   const hasColor = anim?.colorShift?.enabled;

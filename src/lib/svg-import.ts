@@ -29,7 +29,31 @@ export function importSvg(svgText: string): SvgImportResult {
   let embeddedMeta: Record<string, { name?: string; animation?: AnimationConfig }> | null = null;
   if (metaEl?.textContent) {
     try {
-      embeddedMeta = JSON.parse(metaEl.textContent);
+      const parsed = JSON.parse(metaEl.textContent);
+      // Migrate old bounce/move format to new movement format
+      for (const key of Object.keys(parsed)) {
+        const anim = parsed[key]?.animation;
+        if (anim && !anim.movement && (anim.bounce || anim.move)) {
+          anim.movement = { ...defaultAnimationConfig.movement };
+          if (anim.bounce?.enabled) {
+            anim.movement.enabled = true;
+            anim.movement.direction = "up";
+            anim.movement.distance = anim.bounce.distance;
+            anim.movement.speed = anim.bounce.speed;
+            anim.movement.loop = anim.bounce.loop;
+          }
+          if (anim.move?.enabled) {
+            anim.movement.enabled = true;
+            anim.movement.direction = "right";
+            anim.movement.distance = anim.move.distance;
+            anim.movement.speed = anim.move.speed;
+            anim.movement.loop = anim.move.loop;
+          }
+          delete anim.bounce;
+          delete anim.move;
+        }
+      }
+      embeddedMeta = parsed;
     } catch { /* fall back to CSS parsing */ }
   }
 
@@ -120,22 +144,26 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
   if (transformMatch) {
     const transform = transformMatch[1].trim();
 
-    // translateY → bounce
+    // translateY → movement up/down
     const tyMatch = transform.match(/translateY\((-?[\d.]+)px\)/);
     if (tyMatch) {
-      config.bounce.enabled = true;
-      config.bounce.distance = Math.abs(parseFloat(tyMatch[1]));
-      config.bounce.speed = duration;
-      config.bounce.loop = isInfinite;
+      const val = parseFloat(tyMatch[1]);
+      config.movement.enabled = true;
+      config.movement.direction = val < 0 ? "up" : "down";
+      config.movement.distance = Math.abs(val);
+      config.movement.speed = duration;
+      config.movement.loop = isInfinite;
     }
 
-    // translateX → move
+    // translateX → movement left/right
     const txMatch = transform.match(/translateX\((-?[\d.]+)px\)/);
     if (txMatch) {
-      config.move.enabled = true;
-      config.move.distance = parseFloat(txMatch[1]);
-      config.move.speed = duration;
-      config.move.loop = isInfinite;
+      const val = parseFloat(txMatch[1]);
+      config.movement.enabled = true;
+      config.movement.direction = val < 0 ? "left" : "right";
+      config.movement.distance = Math.abs(val);
+      config.movement.speed = duration;
+      config.movement.loop = isInfinite;
     }
 
     // scale
@@ -153,11 +181,9 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
       const angle = parseFloat(rotateMatch[1]);
       config.rotate.enabled = true;
       if (isFromTo) {
-        // from/to → full rotation
         config.rotate.angle = Math.abs(angle);
         config.rotate.clockwise = angle >= 0;
       } else {
-        // 50% keyframe has half the angle
         config.rotate.angle = Math.abs(angle) * 2;
         config.rotate.clockwise = angle >= 0;
       }
@@ -171,7 +197,6 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
   if (opacityMatch) {
     config.fade.enabled = true;
     config.fade.toOpacity = parseFloat(opacityMatch[1]);
-    // Parse start frame opacity
     const startFrame = isFromTo
       ? (kfBody.match(/from\s*\{([^}]+)\}/) || ["", ""])[1]
       : (kfBody.match(/0%[^{]*\{([^}]+)\}/) || ["", ""])[1];
