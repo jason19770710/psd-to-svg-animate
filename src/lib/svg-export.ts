@@ -1,24 +1,11 @@
-import { LayerInfo, AnimationConfig, MovementDirection } from "@/types/psd";
+import { LayerInfo, AnimationConfig } from "@/types/psd";
 
-function getMovementTranslate(direction: MovementDirection, distance: number): string {
-  const d = distance;
-  switch (direction) {
-    case "up": return `translateY(-${d}px)`;
-    case "down": return `translateY(${d}px)`;
-    case "left": return `translateX(-${d}px)`;
-    case "right": return `translateX(${d}px)`;
-    case "up-left": return `translate(-${d}px, -${d}px)`;
-    case "up-right": return `translate(${d}px, -${d}px)`;
-    case "down-left": return `translate(-${d}px, ${d}px)`;
-    case "down-right": return `translate(${d}px, ${d}px)`;
-  }
-}
-
-function getMovementTranslateZero(direction: MovementDirection): string {
-  const hasBoth = direction.includes("-");
-  if (hasBoth) return "translate(0, 0)";
-  if (direction === "up" || direction === "down") return "translateY(0)";
-  return "translateX(0)";
+/** Convert angle (0=up, 90=right, 180=down, 270=left) to translate values */
+function getMovementTranslate(angleDeg: number, distance: number): string {
+  const rad = (angleDeg * Math.PI) / 180;
+  const dx = Math.round(Math.sin(rad) * distance * 100) / 100;
+  const dy = Math.round(-Math.cos(rad) * distance * 100) / 100;
+  return `translate(${dx}px, ${dy}px)`;
 }
 
 export function generateAnimationCSS(
@@ -71,7 +58,7 @@ export function generateAnimationCSS(
       const buildOsc = (phase: "start" | "mid") => {
         const parts: string[] = [];
         if (hasMovement) {
-          parts.push(phase === "mid" ? getMovementTranslate(anim.movement.direction, anim.movement.distance) : getMovementTranslateZero(anim.movement.direction));
+          parts.push(phase === "mid" ? getMovementTranslate(anim.movement.angle, anim.movement.distance) : "translate(0, 0)");
         }
         if (hasScale) {
           parts.push(`scale(${phase === "mid" ? anim.scale.value : 1})`);
@@ -126,8 +113,8 @@ export function generateAnimationCSS(
 
 /** Build nested SVG elements for a layer (for both preview and export) */
 export function buildLayerSvgElements(layer: LayerInfo, anim: AnimationConfig | undefined): {
-  wrapperClasses: string[];  // classes for nested <g> wrappers, outermost first
-  imageClass: string;        // class for the <image> element (flip)
+  wrapperClasses: string[];
+  imageClass: string;
 } {
   const id = layer.id;
   const hasFlip = !!(layer.flipH || layer.flipV);
@@ -139,15 +126,12 @@ export function buildLayerSvgElements(layer: LayerInfo, anim: AnimationConfig | 
   const hasColor = anim?.colorShift?.enabled;
 
   const wrapperClasses: string[] = [];
-
-  // Outermost → innermost order
   if (isContinuousRotate) wrapperClasses.push(`layer-rot-${id}`);
   if (hasOscTransform) wrapperClasses.push(`layer-osc-${id}`);
   if (hasFade) wrapperClasses.push(`layer-fade-${id}`);
   if (hasColor) wrapperClasses.push(`layer-color-${id}`);
 
   const imageClass = hasFlip ? `layer-flip-${id}` : "";
-
   return { wrapperClasses, imageClass };
 }
 
@@ -194,7 +178,6 @@ export function exportSvg(
 
       let inner = `<image href="${l.imageDataUrl}" x="${l.left}" y="${l.top}" width="${l.width}" height="${l.height}"${imageClass ? ` class="${imageClass}"` : ""} style="transform-origin: ${origin}" />`;
 
-      // Wrap with nested <g> elements (innermost class last in array = innermost wrapper)
       for (let i = wrapperClasses.length - 1; i >= 0; i--) {
         inner = `<g class="${wrapperClasses[i]}" style="transform-origin: ${origin}">${inner}</g>`;
       }
@@ -203,7 +186,6 @@ export function exportSvg(
     })
     .join("\n");
 
-  // Embed animation metadata as JSON in a custom metadata element
   const metadata = JSON.stringify(
     Object.fromEntries(
       layers

@@ -1,4 +1,4 @@
-import { AnimationConfig, MovementDirection } from "@/types/psd";
+import { AnimationConfig } from "@/types/psd";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -65,16 +65,78 @@ function LoopToggle({ loop, onChange }: { loop: boolean; onChange: (v: boolean) 
   );
 }
 
-const DIRECTION_OPTIONS: { value: MovementDirection; label: string }[] = [
-  { value: "up", label: "↑ 上" },
-  { value: "down", label: "↓ 下" },
-  { value: "left", label: "← 左" },
-  { value: "right", label: "→ 右" },
-  { value: "up-left", label: "↖ 左上" },
-  { value: "up-right", label: "↗ 右上" },
-  { value: "down-left", label: "↙ 左下" },
-  { value: "down-right", label: "↘ 右下" },
-];
+/** Visual compass for direction angle */
+function AngleSelector({ angle, onChange }: { angle: number; onChange: (v: number) => void }) {
+  const size = 80;
+  const center = size / 2;
+  const radius = 32;
+  const rad = (angle * Math.PI) / 180;
+  const dotX = center + Math.sin(rad) * radius;
+  const dotY = center - Math.cos(rad) * radius;
+
+  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    const update = (ev: MouseEvent | React.MouseEvent) => {
+      const rect = (e.target as Element).closest("svg")!.getBoundingClientRect();
+      const x = ev.clientX - rect.left - center;
+      const y = ev.clientY - rect.top - center;
+      let deg = Math.round((Math.atan2(x, -y) * 180) / Math.PI);
+      if (deg < 0) deg += 360;
+      onChange(deg);
+    };
+    update(e);
+    const onMove = (ev: MouseEvent) => update(ev);
+    const onUp = () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  return (
+    <div className="flex items-center gap-3">
+      <svg
+        width={size}
+        height={size}
+        className="cursor-pointer flex-shrink-0"
+        onMouseDown={handleMouseDown}
+      >
+        <circle cx={center} cy={center} r={radius + 4} fill="hsl(var(--card))" stroke="hsl(var(--border))" strokeWidth={1} />
+        <circle cx={center} cy={center} r={2} fill="hsl(var(--muted-foreground))" />
+        {/* Cardinal markers */}
+        {[0, 90, 180, 270].map((d) => {
+          const r2 = radius + 2;
+          const mx = center + Math.sin((d * Math.PI) / 180) * r2;
+          const my = center - Math.cos((d * Math.PI) / 180) * r2;
+          return <circle key={d} cx={mx} cy={my} r={1.5} fill="hsl(var(--muted-foreground) / 0.4)" />;
+        })}
+        {/* Direction line */}
+        <line x1={center} y1={center} x2={dotX} y2={dotY} stroke="hsl(var(--primary))" strokeWidth={2} strokeLinecap="round" />
+        <circle cx={dotX} cy={dotY} r={5} fill="hsl(var(--primary))" />
+      </svg>
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-mono text-primary">{angle}°</span>
+        <div className="grid grid-cols-3 gap-0.5">
+          {[
+            { label: "↖", deg: 315 }, { label: "↑", deg: 0 }, { label: "↗", deg: 45 },
+            { label: "←", deg: 270 }, { label: "·", deg: -1 }, { label: "→", deg: 90 },
+            { label: "↙", deg: 225 }, { label: "↓", deg: 180 }, { label: "↘", deg: 135 },
+          ].map((btn) => (
+            btn.deg === -1 ? <div key="c" /> :
+            <button
+              key={btn.deg}
+              onClick={() => onChange(btn.deg)}
+              className={`w-6 h-6 text-xs rounded transition-colors ${
+                angle === btn.deg
+                  ? "bg-primary/20 text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
@@ -92,22 +154,10 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">鏡射</span>
-          <Button
-            variant={flipH ? "default" : "outline"}
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => onFlip("h")}
-            title="水平鏡射"
-          >
+          <Button variant={flipH ? "default" : "outline"} size="sm" className="h-7 w-7 p-0" onClick={() => onFlip("h")} title="水平鏡射">
             <FlipHorizontal2 className="h-3.5 w-3.5" />
           </Button>
-          <Button
-            variant={flipV ? "default" : "outline"}
-            size="sm"
-            className="h-7 w-7 p-0"
-            onClick={() => onFlip("v")}
-            title="垂直鏡射"
-          >
+          <Button variant={flipV ? "default" : "outline"} size="sm" className="h-7 w-7 p-0" onClick={() => onFlip("v")} title="垂直鏡射">
             <FlipVertical2 className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -123,26 +173,15 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
           <LoopToggle loop={config.scale.loop} onChange={(v) => update({ scale: { ...config.scale, loop: v } })} />
         </Section>
 
-        {/* Movement (merged bounce + move) */}
+        {/* Movement */}
         <Section icon={Move} title="移動 Movement" enabled={config.movement.enabled}
           onToggle={(v) => update({ movement: { ...config.movement, enabled: v } })}>
           <div>
             <Label className="text-xs text-muted-foreground mb-1.5 block">方向</Label>
-            <div className="grid grid-cols-4 gap-1">
-              {DIRECTION_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => update({ movement: { ...config.movement, direction: opt.value } })}
-                  className={`text-xs py-1.5 px-1 rounded border transition-colors font-mono ${
-                    config.movement.direction === opt.value
-                      ? "border-primary bg-primary/20 text-primary"
-                      : "border-border bg-card text-muted-foreground hover:border-primary/50"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <AngleSelector
+              angle={config.movement.angle}
+              onChange={(v) => update({ movement: { ...config.movement, angle: v } })}
+            />
           </div>
           <SliderRow label="距離" value={config.movement.distance} min={1} max={200} step={1} unit="px"
             onChange={(v) => update({ movement: { ...config.movement, distance: v } })} />
@@ -161,25 +200,19 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
           <LoopToggle loop={config.rotate.loop} onChange={(v) => update({ rotate: { ...config.rotate, loop: v } })} />
           <div className="flex items-center justify-between">
             <Label className="text-xs text-muted-foreground">方向</Label>
-            <button
-              onClick={() => update({ rotate: { ...config.rotate, clockwise: !config.rotate.clockwise } })}
-              className="text-xs font-mono text-primary hover:underline"
-            >
+            <button onClick={() => update({ rotate: { ...config.rotate, clockwise: !config.rotate.clockwise } })} className="text-xs font-mono text-primary hover:underline">
               {config.rotate.clockwise ? "順時針 →" : "逆時針 ←"}
             </button>
           </div>
           <div className="flex items-center justify-between">
             <Label className="text-xs text-muted-foreground">模式</Label>
-            <button
-              onClick={() => update({ rotate: { ...config.rotate, mode: config.rotate.mode === "continuous" ? "alternate" : "continuous" } })}
-              className="text-xs font-mono text-primary hover:underline"
-            >
+            <button onClick={() => update({ rotate: { ...config.rotate, mode: config.rotate.mode === "continuous" ? "alternate" : "continuous" } })} className="text-xs font-mono text-primary hover:underline">
               {config.rotate.mode === "continuous" ? "持續同方向轉 ↻" : "來回旋轉 ⇄"}
             </button>
           </div>
         </Section>
 
-        {/* Fade (Opacity) */}
+        {/* Fade */}
         <Section icon={Eye} title="透明度 Fade" enabled={config.fade.enabled}
           onToggle={(v) => update({ fade: { ...config.fade, enabled: v } })}>
           <SliderRow label="起始透明度" value={config.fade.fromOpacity} min={0} max={1} step={0.05} unit=""
