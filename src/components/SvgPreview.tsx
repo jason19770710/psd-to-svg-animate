@@ -48,12 +48,11 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const handlePanStart = useCallback((e: React.PointerEvent) => {
     const el = containerRef.current;
     if (!el) return;
-    // Middle mouse button or space+left click
-    if (e.button === 1 || (spaceHeld && e.button === 0)) {
+    // Middle mouse button, space+left click, or left click on empty area (not on a layer)
+    if (e.button === 1 || (spaceHeld && e.button === 0) || e.button === 0) {
       e.preventDefault();
       panRef.current = { startX: e.clientX, startY: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
       setIsPanning(true);
-      (e.target as Element).setPointerCapture?.(e.pointerId);
     }
   }, [spaceHeld]);
 
