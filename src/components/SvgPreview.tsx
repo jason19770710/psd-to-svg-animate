@@ -52,6 +52,20 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     };
   }, []);
 
+  const handlePanStart = useCallback((e: React.PointerEvent) => {
+    const el = containerRef.current;
+    if (!el || (e.button !== 0 && e.button !== 1)) return;
+
+    e.preventDefault();
+    panRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      scrollLeft: el.scrollLeft,
+      scrollTop: el.scrollTop,
+    };
+    setIsPanning(true);
+  }, []);
+
   const handlePanMove = useCallback((clientX: number, clientY: number) => {
     if (!panRef.current) return;
     const el = containerRef.current;
@@ -177,11 +191,9 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
       <div
         ref={containerRef}
         className="flex-1 overflow-auto bg-[hsl(220,14%,8%)] relative"
-        style={{ cursor: spaceHeld || isPanning ? 'grab' : undefined }}
+        style={{ cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : undefined }}
         onWheel={handleWheel}
         onPointerDown={handlePanStart}
-        onPointerMove={(e) => { handlePanMove(e); }}
-        onPointerUp={handlePanEnd}
       >
         {/* Checkerboard background */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -209,26 +221,19 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
             width={canvasWidth}
             height={canvasHeight}
             className="border border-border rounded"
-            style={{ background: 'transparent', display: 'block', cursor: spaceHeld || isPanning ? 'grab' : 'default' }}
+            style={{ background: "transparent", display: "block", cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : "default" }}
             onPointerDown={(e) => {
-              // If clicking on SVG background (not a layer), start panning
               if (e.target === svgRef.current || spaceHeld) {
                 handlePanStart(e);
               }
             }}
             onPointerMove={(e) => {
-              if (panRef.current) {
-                handlePanMove(e);
-              } else {
+              if (!panRef.current) {
                 handlePointerMove(e);
               }
             }}
-            onPointerUp={(e) => {
-              if (panRef.current) {
-                handlePanEnd();
-              } else {
-                handlePointerUp();
-              }
+            onPointerUp={() => {
+              handlePointerUp();
             }}
           >
             <defs>
