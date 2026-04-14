@@ -12,61 +12,60 @@ export function importSvg(svgText: string): SvgImportResult {
   const svg = doc.querySelector("svg");
   if (!svg) throw new Error("Invalid SVG");
 
-  // Parse canvas size from viewBox or width/height
   const viewBox = svg.getAttribute("viewBox");
   let w = parseInt(svg.getAttribute("width") || "0");
   let h = parseInt(svg.getAttribute("height") || "0");
   if (viewBox) {
     const parts = viewBox.split(/\s+/).map(Number);
-    if (parts.length === 4) {
-      w = parts[2] || w;
-      h = parts[3] || h;
-    }
+    if (parts.length === 4) { w = parts[2] || w; h = parts[3] || h; }
   }
 
-  // Try to read embedded metadata first
   const metaEl = svg.querySelector("metadata *");
   let embeddedMeta: Record<string, { name?: string; animation?: AnimationConfig }> | null = null;
   if (metaEl?.textContent) {
     try {
       const parsed = JSON.parse(metaEl.textContent);
-      // Migrate old bounce/move format to new movement format
+      // Migrate old bounce/move → movement with angle
       for (const key of Object.keys(parsed)) {
         const anim = parsed[key]?.animation;
         if (anim && !anim.movement && (anim.bounce || anim.move)) {
           anim.movement = { ...defaultAnimationConfig.movement };
           if (anim.bounce?.enabled) {
             anim.movement.enabled = true;
-            anim.movement.direction = "up";
+            anim.movement.angle = 0; // up
             anim.movement.distance = anim.bounce.distance;
             anim.movement.speed = anim.bounce.speed;
             anim.movement.loop = anim.bounce.loop;
           }
           if (anim.move?.enabled) {
             anim.movement.enabled = true;
-            anim.movement.direction = "right";
-            anim.movement.distance = anim.move.distance;
+            anim.movement.angle = 90; // right
+            anim.movement.distance = Math.abs(anim.move.distance);
             anim.movement.speed = anim.move.speed;
             anim.movement.loop = anim.move.loop;
           }
           delete anim.bounce;
           delete anim.move;
         }
+        // Migrate old direction-based movement to angle-based
+        if (anim?.movement?.direction) {
+          const dirMap: Record<string, number> = {
+            up: 0, "up-right": 45, right: 90, "down-right": 135,
+            down: 180, "down-left": 225, left: 270, "up-left": 315,
+          };
+          anim.movement.angle = dirMap[anim.movement.direction] ?? 0;
+          delete anim.movement.direction;
+        }
       }
       embeddedMeta = parsed;
     } catch { /* fall back to CSS parsing */ }
   }
 
-  // Extract CSS from <style> inside <defs> (fallback)
   const styleEl = svg.querySelector("defs style");
   const cssText = styleEl?.textContent || "";
-
-  // Parse layers from <image> elements
   const images = svg.querySelectorAll("image");
   const layers: LayerInfo[] = [];
   const animations: Record<string, AnimationConfig> = {};
-
-  // Images are rendered in reverse order (bottom-up), so we reverse back
   const imageArr = Array.from(images).reverse();
 
   for (const img of imageArr) {
@@ -80,24 +79,10 @@ export function importSvg(svgText: string): SvgImportResult {
     const top = parseFloat(img.getAttribute("y") || "0");
     const width = parseFloat(img.getAttribute("width") || "0");
     const height = parseFloat(img.getAttribute("height") || "0");
-
     const meta = embeddedMeta?.[id];
 
-    layers.push({
-      id,
-      name: meta?.name || `圖層 ${layers.length + 1}`,
-      left,
-      top,
-      width,
-      height,
-      imageDataUrl: href,
-      visible: true,
-    });
-
-    // Use embedded metadata if available, otherwise fall back to CSS parsing
-    animations[id] = meta?.animation
-      ? JSON.parse(JSON.stringify(meta.animation))
-      : parseAnimationFromCSS(cssText, id);
+    layers.push({ id, name: meta?.name || `圖層 ${layers.length + 1}`, left, top, width, height, imageDataUrl: href, visible: true });
+    animations[id] = meta?.animation ? JSON.parse(JSON.stringify(meta.animation)) : parseAnimationFromCSS(cssText, id);
   }
 
   return { layers, animations, canvasSize: { w, h } };
@@ -107,7 +92,6 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
   const config: AnimationConfig = JSON.parse(JSON.stringify(defaultAnimationConfig));
   const animName = `anim-${layerId}`;
 
-  // Find the .layer-{id} rule to get duration, iteration
   const layerRuleRegex = new RegExp(`\\.layer-${escapeRegex(layerId)}\\s*\\{([^}]+)\\}`);
   const layerMatch = css.match(layerRuleRegex);
   if (!layerMatch) return config;
@@ -121,7 +105,6 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
   const duration = durationMatch ? parseFloat(durationMatch[1]) : 1;
   const isInfinite = animValue.includes("infinite");
 
-  // Find the keyframes
   const kfRegex = new RegExp(`@keyframes\\s+${escapeRegex(animName)}\\s*\\{([\\s\\S]*?)\\}\\n`);
   const kfMatch = css.match(kfRegex);
   if (!kfMatch) return config;
@@ -129,7 +112,6 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
   const kfBody = kfMatch[1];
   const isFromTo = kfBody.includes("from {") || kfBody.includes("from{");
 
-  // Extract 50% or "to" frame properties
   let midFrame = "";
   if (isFromTo) {
     const toMatch = kfBody.match(/to\s*\{([^}]+)\}/);
@@ -139,34 +121,35 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
     midFrame = fiftyMatch ? fiftyMatch[1] : "";
   }
 
-  // Parse transform
   const transformMatch = midFrame.match(/transform:\s*([^;]+)/);
   if (transformMatch) {
     const transform = transformMatch[1].trim();
 
-    // translateY → movement up/down
+    // translate(dx, dy) or translateX/translateY → movement angle
+    const translateMatch = transform.match(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/);
     const tyMatch = transform.match(/translateY\((-?[\d.]+)px\)/);
-    if (tyMatch) {
-      const val = parseFloat(tyMatch[1]);
-      config.movement.enabled = true;
-      config.movement.direction = val < 0 ? "up" : "down";
-      config.movement.distance = Math.abs(val);
-      config.movement.speed = duration;
-      config.movement.loop = isInfinite;
-    }
-
-    // translateX → movement left/right
     const txMatch = transform.match(/translateX\((-?[\d.]+)px\)/);
-    if (txMatch) {
-      const val = parseFloat(txMatch[1]);
+
+    let dx = 0, dy = 0;
+    if (translateMatch) {
+      dx = parseFloat(translateMatch[1]);
+      dy = parseFloat(translateMatch[2]);
+    } else if (tyMatch) {
+      dy = parseFloat(tyMatch[1]);
+    } else if (txMatch) {
+      dx = parseFloat(txMatch[1]);
+    }
+
+    if (dx !== 0 || dy !== 0) {
       config.movement.enabled = true;
-      config.movement.direction = val < 0 ? "left" : "right";
-      config.movement.distance = Math.abs(val);
+      config.movement.distance = Math.round(Math.sqrt(dx * dx + dy * dy));
+      let angle = Math.round((Math.atan2(dx, -dy) * 180) / Math.PI);
+      if (angle < 0) angle += 360;
+      config.movement.angle = angle;
       config.movement.speed = duration;
       config.movement.loop = isInfinite;
     }
 
-    // scale
     const scaleMatch = transform.match(/scale\(([\d.]+)\)/);
     if (scaleMatch) {
       config.scale.enabled = true;
@@ -175,24 +158,17 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
       config.scale.loop = isInfinite;
     }
 
-    // rotate (from-to style: parse "to" frame)
     const rotateMatch = transform.match(/rotate\((-?[\d.]+)deg\)/);
     if (rotateMatch) {
-      const angle = parseFloat(rotateMatch[1]);
+      const a = parseFloat(rotateMatch[1]);
       config.rotate.enabled = true;
-      if (isFromTo) {
-        config.rotate.angle = Math.abs(angle);
-        config.rotate.clockwise = angle >= 0;
-      } else {
-        config.rotate.angle = Math.abs(angle) * 2;
-        config.rotate.clockwise = angle >= 0;
-      }
+      config.rotate.angle = isFromTo ? Math.abs(a) : Math.abs(a) * 2;
+      config.rotate.clockwise = a >= 0;
       config.rotate.speed = duration;
       config.rotate.loop = isInfinite;
     }
   }
 
-  // Parse opacity → fade
   const opacityMatch = midFrame.match(/opacity:\s*([\d.]+)/);
   if (opacityMatch) {
     config.fade.enabled = true;
@@ -206,7 +182,6 @@ function parseAnimationFromCSS(css: string, layerId: string): AnimationConfig {
     config.fade.loop = isInfinite;
   }
 
-  // Parse filter → colorShift
   const filterMatch = midFrame.match(/filter:\s*([^;]+)/);
   if (filterMatch) {
     const filter = filterMatch[1];
