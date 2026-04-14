@@ -129,7 +129,18 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
             backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
           }}
         />
-        <div className="p-4 flex-shrink-0" style={{ margin: 'auto', width: 'fit-content', transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
+        <div style={{
+          minWidth: '100%',
+          minHeight: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px',
+          /* Use explicit sizing so scrollbars appear when zoomed content exceeds container */
+          width: canvasWidth * zoom + 32 > (containerRef.current?.clientWidth ?? 0) ? canvasWidth * zoom + 32 : '100%',
+          height: canvasHeight * zoom + 32 > (containerRef.current?.clientHeight ?? 0) ? canvasHeight * zoom + 32 : '100%',
+        }}>
+          <div style={{ transform: `scale(${zoom})`, transformOrigin: 'center center', flexShrink: 0 }}>
           <svg
             ref={svgRef}
             viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
@@ -191,6 +202,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
               );
             })}
           </svg>
+          </div>
         </div>
       </div>
     </div>
