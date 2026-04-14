@@ -12,11 +12,12 @@ interface SvgPreviewProps {
   selectedId: string | null;
   onSelectLayer: (id: string) => void;
   onMoveLayer: (id: string, left: number, top: number) => void;
+  onMoveStart?: () => void;
 }
 
 const ZOOM_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
-export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer }: SvgPreviewProps) {
+export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart }: SvgPreviewProps) {
   const css = useMemo(() => generateAnimationCSS(layers, animations), [layers, animations]);
   const visibleLayers = layers.filter((l) => l.visible);
   const renderLayers = [...visibleLayers].reverse();
@@ -81,11 +82,12 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     e.stopPropagation();
     const layer = layers.find((l) => l.id === layerId);
     if (!layer) return;
+    onMoveStart?.();
     const coords = toSvgCoords(e.clientX, e.clientY);
     dragRef.current = { id: layerId, startX: coords.x, startY: coords.y, origLeft: layer.left, origTop: layer.top };
     (e.target as Element).setPointerCapture(e.pointerId);
     onSelectLayer(layerId);
-  }, [layers, toSvgCoords, onSelectLayer]);
+  }, [layers, toSvgCoords, onSelectLayer, onMoveStart]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return;
