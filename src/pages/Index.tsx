@@ -160,8 +160,7 @@ export default function Index() {
     }
   }, []);
 
-  const handleAddImage = useCallback(async (file: File) => {
-    // Check if it's a PSD file
+  const addImageDirectly = useCallback(async (file: File) => {
     if (file.name.toLowerCase().endsWith(".psd")) {
       const reader = new FileReader();
       reader.onload = async () => {
@@ -196,6 +195,58 @@ export default function Index() {
       toast.error(`無法載入圖片: ${file.name}`);
     }
   }, []);
+
+  const checkImageSize = useCallback((file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      if (file.name.toLowerCase().endsWith(".psd")) {
+        const reader = new FileReader();
+        reader.onload = async () => {
+          if (reader.result instanceof ArrayBuffer) {
+            try {
+              const psd = await parsePsdFile(reader.result);
+              resolve({ width: psd.width, height: psd.height });
+            } catch {
+              reject();
+            }
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => resolve({ width: img.width, height: img.height });
+          img.onerror = reject;
+          img.src = reader.result as string;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      }
+    });
+  }, []);
+
+  const handleAddImage = useCallback(async (file: File) => {
+    try {
+      const size = await checkImageSize(file);
+      const overW = size.width > canvasSize.w;
+      const overH = size.height > canvasSize.h;
+      if (overW || overH) {
+        setOversizeWarning({
+          files: [file],
+          details: `圖片尺寸 ${size.width}×${size.height} 超過舞台尺寸 ${canvasSize.w}×${canvasSize.h}${overW && overH ? "（寬度與高度皆超過）" : overW ? "（寬度超過）" : "（高度超過）"}`,
+          onConfirm: () => {
+            addImageDirectly(file);
+            setOversizeWarning(null);
+          },
+        });
+        return;
+      }
+    } catch {
+      // If size check fails, proceed anyway
+    }
+    addImageDirectly(file);
+  }, [canvasSize, checkImageSize, addImageDirectly]);
 
   const saveFile = async (blob: Blob, suggestedName: string, description: string, accept: Record<string, string[]>) => {
     if ('showSaveFilePicker' in window) {
