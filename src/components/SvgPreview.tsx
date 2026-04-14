@@ -135,11 +135,9 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   };
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      setZoom((z) => Math.min(Math.max(z + delta, 0.05), 5));
-    }
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    setZoom((z) => Math.min(Math.max(z + delta, 0.05), 5));
   }, []);
 
   const toSvgCoords = useCallback((clientX: number, clientY: number) => {
