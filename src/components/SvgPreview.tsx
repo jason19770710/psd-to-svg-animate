@@ -25,6 +25,50 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
   const dragRef = useRef<{ id: string; startX: number; startY: number; origLeft: number; origTop: number } | null>(null);
+  const panRef = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const [spaceHeld, setSpaceHeld] = useState(false);
+
+  // Space key for pan mode
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !e.repeat && e.target === document.body) {
+        e.preventDefault();
+        setSpaceHeld(true);
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') setSpaceHeld(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => { window.removeEventListener('keydown', onKeyDown); window.removeEventListener('keyup', onKeyUp); };
+  }, []);
+
+  const handlePanStart = useCallback((e: React.PointerEvent) => {
+    const el = containerRef.current;
+    if (!el) return;
+    // Middle mouse button or space+left click
+    if (e.button === 1 || (spaceHeld && e.button === 0)) {
+      e.preventDefault();
+      panRef.current = { startX: e.clientX, startY: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
+      setIsPanning(true);
+      (e.target as Element).setPointerCapture?.(e.pointerId);
+    }
+  }, [spaceHeld]);
+
+  const handlePanMove = useCallback((e: React.PointerEvent) => {
+    if (!panRef.current) return;
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollLeft = panRef.current.scrollLeft - (e.clientX - panRef.current.startX);
+    el.scrollTop = panRef.current.scrollTop - (e.clientY - panRef.current.startY);
+  }, []);
+
+  const handlePanEnd = useCallback(() => {
+    panRef.current = null;
+    setIsPanning(false);
+  }, []);
 
   const fitToScreen = useCallback(() => {
     const el = containerRef.current;
