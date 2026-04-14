@@ -29,45 +29,73 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const [isPanning, setIsPanning] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
 
-  // Space key for pan mode
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !e.repeat && e.target === document.body) {
+      if (e.code === "Space" && !e.repeat && e.target === document.body) {
         e.preventDefault();
         setSpaceHeld(true);
       }
     };
+
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space') setSpaceHeld(false);
+      if (e.code === "Space") {
+        setSpaceHeld(false);
+      }
     };
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-    return () => { window.removeEventListener('keydown', onKeyDown); window.removeEventListener('keyup', onKeyUp); };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
   }, []);
 
   const handlePanStart = useCallback((e: React.PointerEvent) => {
     const el = containerRef.current;
-    if (!el) return;
-    // Middle mouse button, space+left click, or left click on empty area (not on a layer)
-    if (e.button === 1 || (spaceHeld && e.button === 0) || e.button === 0) {
-      e.preventDefault();
-      panRef.current = { startX: e.clientX, startY: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop };
-      setIsPanning(true);
-    }
-  }, [spaceHeld]);
+    if (!el || (e.button !== 0 && e.button !== 1)) return;
 
-  const handlePanMove = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    panRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      scrollLeft: el.scrollLeft,
+      scrollTop: el.scrollTop,
+    };
+    setIsPanning(true);
+  }, []);
+
+  const handlePanMove = useCallback((clientX: number, clientY: number) => {
     if (!panRef.current) return;
     const el = containerRef.current;
     if (!el) return;
-    el.scrollLeft = panRef.current.scrollLeft - (e.clientX - panRef.current.startX);
-    el.scrollTop = panRef.current.scrollTop - (e.clientY - panRef.current.startY);
+
+    el.scrollLeft = panRef.current.scrollLeft - (clientX - panRef.current.startX);
+    el.scrollTop = panRef.current.scrollTop - (clientY - panRef.current.startY);
   }, []);
 
   const handlePanEnd = useCallback(() => {
     panRef.current = null;
     setIsPanning(false);
   }, []);
+
+  useEffect(() => {
+    if (!isPanning) return;
+
+    const onPointerMove = (e: PointerEvent) => handlePanMove(e.clientX, e.clientY);
+    const onPointerEnd = () => handlePanEnd();
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerEnd);
+    window.addEventListener("pointercancel", onPointerEnd);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerEnd);
+      window.removeEventListener("pointercancel", onPointerEnd);
+    };
+  }, [isPanning, handlePanMove, handlePanEnd]);
 
   const fitToScreen = useCallback(() => {
     const el = containerRef.current;
@@ -163,11 +191,9 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
       <div
         ref={containerRef}
         className="flex-1 overflow-auto bg-[hsl(220,14%,8%)] relative"
-        style={{ cursor: spaceHeld || isPanning ? 'grab' : undefined }}
+        style={{ cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : undefined }}
         onWheel={handleWheel}
         onPointerDown={handlePanStart}
-        onPointerMove={(e) => { handlePanMove(e); }}
-        onPointerUp={handlePanEnd}
       >
         {/* Checkerboard background */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -195,26 +221,19 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
             width={canvasWidth}
             height={canvasHeight}
             className="border border-border rounded"
-            style={{ background: 'transparent', display: 'block', cursor: spaceHeld || isPanning ? 'grab' : 'default' }}
+            style={{ background: "transparent", display: "block", cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : "default" }}
             onPointerDown={(e) => {
-              // If clicking on SVG background (not a layer), start panning
               if (e.target === svgRef.current || spaceHeld) {
                 handlePanStart(e);
               }
             }}
             onPointerMove={(e) => {
-              if (panRef.current) {
-                handlePanMove(e);
-              } else {
+              if (!panRef.current) {
                 handlePointerMove(e);
               }
             }}
-            onPointerUp={(e) => {
-              if (panRef.current) {
-                handlePanEnd();
-              } else {
-                handlePointerUp();
-              }
+            onPointerUp={() => {
+              handlePointerUp();
             }}
           >
             <defs>
