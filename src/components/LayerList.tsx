@@ -25,7 +25,7 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
   const hasAnimation = (id: string) => {
     const a = animations[id];
     if (!a) return false;
-    return a.scale.enabled || a.bounce.enabled || a.move.enabled || a.rotate.enabled || a.fade?.enabled || a.colorShift?.enabled;
+    return a.scale.enabled || a.movement?.enabled || a.rotate.enabled || a.fade?.enabled || a.colorShift?.enabled;
   };
 
   const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
