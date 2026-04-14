@@ -24,7 +24,6 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
-  const [fitted, setFitted] = useState(false);
   const dragRef = useRef<{ id: string; startX: number; startY: number; origLeft: number; origTop: number } | null>(null);
 
   const fitToScreen = useCallback(() => {
@@ -36,13 +35,9 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     setZoom(Math.min(scaleX, scaleY, 1));
   }, [canvasWidth, canvasHeight]);
 
-  // Auto-fit on first load
   useEffect(() => {
-    if (!fitted && containerRef.current) {
-      fitToScreen();
-      setFitted(true);
-    }
-  }, [fitted, fitToScreen]);
+    fitToScreen();
+  }, [fitToScreen]);
 
   const zoomIn = () => {
     setZoom((z) => {
