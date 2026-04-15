@@ -83,17 +83,17 @@ export function generateAnimationCSS(
                          (hasAlternateRotate && anim.rotate.loop);
 
       if (isLinearMovement && !hasScale && !hasAlternateRotate) {
-        // Pure linear movement: A to B
+        // Pure linear movement: B to A (B is start, A is end)
         const sx = anim.movement.startX ?? 0;
         const sy = anim.movement.startY ?? 0;
         const tx = anim.movement.targetX ?? 0;
         const ty = anim.movement.targetY ?? 0;
-        // A is start, B is end
-        const startTranslate = (sx || sy) ? `translate(${sx}px, ${sy}px)` : `translate(0, 0)`;
-        const endTranslate = (tx || ty) ? `translate(${tx}px, ${ty}px)` : `translate(0, 0)`;
+        // B (target) is start, A (start) is end
+        const bTranslate = (tx || ty) ? `translate(${tx}px, ${ty}px)` : `translate(0, 0)`;
+        const aTranslate = (sx || sy) ? `translate(${sx}px, ${sy}px)` : `translate(0, 0)`;
         css += `@keyframes ${oName} {
-  0% { transform: ${startTranslate}; }
-  100% { transform: ${endTranslate}; }
+  0% { transform: ${bTranslate}; }
+  100% { transform: ${aTranslate}; }
 }\n`;
         css += `.layer-osc-${id} { transform-origin: ${origin}; animation: ${oName} ${oscDuration}s ease-in-out 1 forwards; }\n`;
       } else {

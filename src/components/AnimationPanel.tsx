@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimationConfig } from "@/types/psd";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2, Play } from "lucide-react";
+import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2, Play, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AnimationPanelProps {
@@ -14,6 +14,7 @@ interface AnimationPanelProps {
   flipV: boolean;
   onFlip: (axis: "h" | "v") => void;
   onPlayLinear?: () => void;
+  onResetLinear?: () => void;
 }
 
 function Section({
@@ -140,8 +141,16 @@ function AngleSelector({ angle, onChange }: { angle: number; onChange: (v: numbe
   );
 }
 
-export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip, onPlayLinear }: AnimationPanelProps) {
+export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip, onPlayLinear, onResetLinear }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
+  const [isLinearPlaying, setIsLinearPlaying] = useState(false);
+
+  // Reset playing state when mode changes or movement is disabled
+  useEffect(() => {
+    if (!config.movement.enabled || config.movement.mode !== "linear") {
+      setIsLinearPlaying(false);
+    }
+  }, [config.movement.enabled, config.movement.mode]);
 
   return (
     <div className="flex flex-col h-full">
@@ -188,28 +197,41 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
               }
               update(updates);
             }} className="text-xs font-mono text-primary hover:underline">
-              {config.movement.mode === "oscillate" ? "來回移動 ⇄" : "單次移動 A→B"}
+              {config.movement.mode === "oscillate" ? "來回移動 ⇄" : "單次移動 B→A"}
             </button>
           </div>
           {config.movement.mode === "linear" ? (
             <>
               <div className="rounded-md bg-muted/50 p-2.5 space-y-1.5">
                 <p className="text-xs text-muted-foreground">
-                  A 點（起點）：
-                  <span className="font-mono text-destructive"> ({config.movement.startX ?? 0}, {config.movement.startY ?? 0})</span>
+                  B 點（起點）：
+                  <span className="font-mono text-primary"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  B 點（終點，預設圖層位置）：
-                  <span className="font-mono text-primary"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
+                  A 點（終點）：
+                  <span className="font-mono text-destructive"> ({config.movement.startX ?? 0}, {config.movement.startY ?? 0})</span>
                 </p>
                 <p className="text-[10px] text-muted-foreground/60 mt-1">在畫布上拖曳 A / B 標記來設定位置</p>
               </div>
               <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
                 onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
-              <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => onPlayLinear?.()}>
-                <Play className="h-3.5 w-3.5" />
-                <span className="text-xs">播放移動效果</span>
-              </Button>
+              {!isLinearPlaying ? (
+                <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => {
+                  onPlayLinear?.();
+                  setIsLinearPlaying(true);
+                }}>
+                  <Play className="h-3.5 w-3.5" />
+                  <span className="text-xs">播放移動效果</span>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => {
+                  onResetLinear?.();
+                  setIsLinearPlaying(false);
+                }}>
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  <span className="text-xs">回復原位</span>
+                </Button>
+              )}
             </>
           ) : (
             <>
