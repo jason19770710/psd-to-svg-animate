@@ -13,12 +13,13 @@ interface SvgPreviewProps {
   onSelectLayer: (id: string) => void;
   onMoveLayer: (id: string, left: number, top: number) => void;
   onMoveStart?: () => void;
+  animKey?: number;
 }
 
 const ZOOM_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
-export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart }: SvgPreviewProps) {
-  const css = useMemo(() => generateAnimationCSS(layers, animations), [layers, animations]);
+export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey }: SvgPreviewProps) {
+  const css = useMemo(() => generateAnimationCSS(layers, animations), [layers, animations, animKey]);
   const visibleLayers = layers.filter((l) => l.visible);
   const renderLayers = [...visibleLayers].reverse();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -262,7 +263,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
               onPointerUp={handlePointerUp}
             >
               <defs>
-                <style>{css}</style>
+                <style key={animKey}>{css}</style>
               </defs>
               {renderLayers.map((layer) => {
                 const anim = animations[layer.id];

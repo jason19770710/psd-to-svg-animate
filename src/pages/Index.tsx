@@ -69,6 +69,7 @@ export default function Index() {
   const [layers, setLayers] = useState<LayerInfo[]>([]);
   const [animations, setAnimations] = useState<Record<string, AnimationConfig>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [linearPlayKey, setLinearPlayKey] = useState(0);
   const [canvasSize, setCanvasSize] = useState({ w: 2880, h: 1620 });
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -539,6 +540,7 @@ export default function Index() {
           onSelectLayer={setSelectedId}
           onMoveLayer={moveLayer}
           onMoveStart={saveSnapshot}
+          animKey={linearPlayKey}
         />
 
         <div className="w-72 border-l border-border bg-card flex-shrink-0 overflow-hidden flex flex-col">
@@ -550,6 +552,7 @@ export default function Index() {
               flipH={!!selectedLayer.flipH}
               flipV={!!selectedLayer.flipV}
               onFlip={(axis) => flipLayer(selectedId!, axis)}
+              onPlayLinear={() => setLinearPlayKey((k) => k + 1)}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center p-4">

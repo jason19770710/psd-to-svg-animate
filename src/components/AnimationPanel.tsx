@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { AnimationConfig } from "@/types/psd";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2 } from "lucide-react";
+import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AnimationPanelProps {
@@ -12,6 +13,7 @@ interface AnimationPanelProps {
   flipH: boolean;
   flipV: boolean;
   onFlip: (axis: "h" | "v") => void;
+  onPlayLinear?: () => void;
 }
 
 function Section({
@@ -138,7 +140,7 @@ function AngleSelector({ angle, onChange }: { angle: number; onChange: (v: numbe
   );
 }
 
-export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip }: AnimationPanelProps) {
+export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip, onPlayLinear }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
 
   return (
@@ -193,7 +195,14 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
               {config.movement.mode === "oscillate" ? "來回移動 ⇄" : "單次移動 A→B"}
             </button>
           </div>
-          <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
+          {config.movement.mode === "oscillate" ? (
+            <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
+          ) : (
+            <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => onPlayLinear?.()}>
+              <Play className="h-3.5 w-3.5" />
+              <span className="text-xs">播放移動效果</span>
+            </Button>
+          )}
         </Section>
 
         {/* Rotate */}
