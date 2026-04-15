@@ -71,6 +71,7 @@ export default function Index() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [linearPlayKey, setLinearPlayKey] = useState(0);
   const linearBasePosRef = useRef<{ left: number; top: number } | null>(null);
+  const aDragBaseRef = useRef<{ left: number; top: number; tx: number; ty: number } | null>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 2880, h: 1620 });
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
