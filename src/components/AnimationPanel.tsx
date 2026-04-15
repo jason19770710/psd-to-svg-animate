@@ -195,7 +195,14 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
               {config.movement.mode === "oscillate" ? "來回移動 ⇄" : "單次移動 A→B"}
             </button>
           </div>
-          <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
+          {config.movement.mode === "oscillate" ? (
+            <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
+          ) : (
+            <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => onPlayLinear?.()}>
+              <Play className="h-3.5 w-3.5" />
+              <span className="text-xs">播放移動效果</span>
+            </Button>
+          )}
         </Section>
 
         {/* Rotate */}
