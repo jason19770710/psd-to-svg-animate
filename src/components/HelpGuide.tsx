@@ -33,9 +33,9 @@ const sections: HelpSection[] = [
     items: [
       { icon: <Plus className="h-3 w-3" />, text: "加入圖片或 PSD 為新圖層" },
       { icon: <GripVertical className="h-3 w-3" />, text: "拖拽排序 → 調整圖層順序" },
-      { icon: <Replace className="h-3 w-3" />, text: "替換圖層圖片  (僅可PNG檔)" },
+      { icon: <Replace className="h-3 w-3" />, text: "替換圖層圖片 (僅可PNG檔)" },
       { icon: <Copy className="h-3 w-3" />, text: "複製圖層" },
-      { icon: <Ban className="h-3 w-3" />, text: "排除導出. (不含於 SVG）" },
+      { icon: <Ban className="h-3 w-3" />, text: "排除導出 (不含於 SVG）" },
       { icon: <Trash2 className="h-3 w-3" />, text: "刪除圖層" },
       { icon: <Eye className="h-3 w-3" />, text: "顯示/隱藏圖層" },
     ],
