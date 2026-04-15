@@ -14,11 +14,12 @@ interface SvgPreviewProps {
   onMoveLayer: (id: string, left: number, top: number) => void;
   onMoveStart?: () => void;
   animKey?: number;
+  onMoveBPoint?: (id: string, targetX: number, targetY: number) => void;
 }
 
 const ZOOM_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
-export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey }: SvgPreviewProps) {
+export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey, onMoveBPoint }: SvgPreviewProps) {
   const css = useMemo(() => generateAnimationCSS(layers, animations), [layers, animations, animKey]);
   const visibleLayers = layers.filter((l) => l.visible);
   const renderLayers = [...visibleLayers].reverse();
@@ -26,6 +27,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
   const dragRef = useRef<{ id: string; startX: number; startY: number; origLeft: number; origTop: number } | null>(null);
+  const bPointDragRef = useRef<{ id: string; startX: number; startY: number; origTX: number; origTY: number } | null>(null);
   const panRef = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
