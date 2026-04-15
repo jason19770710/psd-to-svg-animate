@@ -140,7 +140,7 @@ function AngleSelector({ angle, onChange }: { angle: number; onChange: (v: numbe
   );
 }
 
-export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip }: AnimationPanelProps) {
+export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip, onPlayLinear }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
 
   return (
