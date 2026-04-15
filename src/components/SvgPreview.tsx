@@ -190,11 +190,17 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   }, [layers, toSvgCoords, onSelectLayer, onMoveStart, spaceHeld, isPanning]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (bPointDragRef.current) {
+    if (markerDragRef.current) {
       const coords = toSvgCoords(e.clientX, e.clientY);
-      const dx = coords.x - bPointDragRef.current.startX;
-      const dy = coords.y - bPointDragRef.current.startY;
-      onMoveBPoint?.(bPointDragRef.current.id, Math.round(bPointDragRef.current.origTX + dx), Math.round(bPointDragRef.current.origTY + dy));
+      const dx = coords.x - markerDragRef.current.startX;
+      const dy = coords.y - markerDragRef.current.startY;
+      const newX = Math.round(markerDragRef.current.origTX + dx);
+      const newY = Math.round(markerDragRef.current.origTY + dy);
+      if (markerDragRef.current.point === "B") {
+        onMoveBPoint?.(markerDragRef.current.id, newX, newY);
+      } else {
+        onMoveAPoint?.(markerDragRef.current.id, newX, newY);
+      }
       return;
     }
     if (!dragRef.current) return;
@@ -202,18 +208,18 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
     const dx = coords.x - dragRef.current.startX;
     const dy = coords.y - dragRef.current.startY;
     onMoveLayer(dragRef.current.id, Math.round(dragRef.current.origLeft + dx), Math.round(dragRef.current.origTop + dy));
-  }, [toSvgCoords, onMoveLayer, onMoveBPoint]);
+  }, [toSvgCoords, onMoveLayer, onMoveBPoint, onMoveAPoint]);
 
   const handlePointerUp = useCallback(() => {
     dragRef.current = null;
-    bPointDragRef.current = null;
+    markerDragRef.current = null;
   }, []);
 
-  const handleBPointPointerDown = useCallback((e: React.PointerEvent, layerId: string, currentTX: number, currentTY: number) => {
+  const handleMarkerPointerDown = useCallback((e: React.PointerEvent, layerId: string, point: "A" | "B", currentX: number, currentY: number) => {
     if (spaceHeld || isPanning) return;
     e.stopPropagation();
     const coords = toSvgCoords(e.clientX, e.clientY);
-    bPointDragRef.current = { id: layerId, startX: coords.x, startY: coords.y, origTX: currentTX, origTY: currentTY };
+    markerDragRef.current = { id: layerId, point, startX: coords.x, startY: coords.y, origTX: currentX, origTY: currentY };
     (e.target as Element).setPointerCapture(e.pointerId);
   }, [toSvgCoords, spaceHeld, isPanning]);
 
