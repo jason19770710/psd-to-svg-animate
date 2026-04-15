@@ -565,6 +565,8 @@ export default function Index() {
           {selectedLayer && animations[selectedId!] ? (
             <AnimationPanel
               layerName={selectedLayer.name}
+              layerWidth={selectedLayer.width}
+              layerHeight={selectedLayer.height}
               config={animations[selectedId!]}
               onChange={(c) => updateAnimation(selectedId!, c)}
               flipH={!!selectedLayer.flipH}
