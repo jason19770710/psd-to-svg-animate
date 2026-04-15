@@ -25,6 +25,7 @@ export interface AnimationConfig {
     distance: number; // px
     speed: number;
     loop: boolean;
+    mode: "oscillate" | "linear"; // oscillate = back and forth, linear = A to B
   };
   rotate: {
     enabled: boolean;
