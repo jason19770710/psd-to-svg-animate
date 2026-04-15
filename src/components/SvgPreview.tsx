@@ -28,7 +28,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
   const dragRef = useRef<{ id: string; startX: number; startY: number; origLeft: number; origTop: number } | null>(null);
-  const bPointDragRef = useRef<{ id: string; startX: number; startY: number; origTX: number; origTY: number } | null>(null);
+  const markerDragRef = useRef<{ id: string; point: "A" | "B"; startX: number; startY: number; origTX: number; origTY: number } | null>(null);
   const panRef = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
