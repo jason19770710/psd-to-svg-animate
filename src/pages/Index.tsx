@@ -540,6 +540,7 @@ export default function Index() {
           onSelectLayer={setSelectedId}
           onMoveLayer={moveLayer}
           onMoveStart={saveSnapshot}
+          animKey={linearPlayKey}
         />
 
         <div className="w-72 border-l border-border bg-card flex-shrink-0 overflow-hidden flex flex-col">

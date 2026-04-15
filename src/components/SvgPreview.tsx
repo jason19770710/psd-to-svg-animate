@@ -263,7 +263,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
               onPointerUp={handlePointerUp}
             >
               <defs>
-                <style>{css}</style>
+                <style key={animKey}>{css}</style>
               </defs>
               {renderLayers.map((layer) => {
                 const anim = animations[layer.id];
