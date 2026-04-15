@@ -143,7 +143,7 @@ function AngleSelector({ angle, onChange }: { angle: number; onChange: (v: numbe
   );
 }
 
-export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFlip, onPlayLinear, onResetLinear }: AnimationPanelProps) {
+export function AnimationPanel({ layerName, layerWidth, layerHeight, config, onChange, flipH, flipV, onFlip, onPlayLinear, onResetLinear }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
   const [isLinearPlaying, setIsLinearPlaying] = useState(false);
 
