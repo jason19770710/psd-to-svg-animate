@@ -70,6 +70,7 @@ export default function Index() {
   const [animations, setAnimations] = useState<Record<string, AnimationConfig>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [linearPlayKey, setLinearPlayKey] = useState(0);
+  const linearBasePosRef = useRef<{ left: number; top: number } | null>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 2880, h: 1620 });
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
