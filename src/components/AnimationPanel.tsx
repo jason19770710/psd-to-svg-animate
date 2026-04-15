@@ -180,7 +180,14 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
           onToggle={(v) => update({ movement: { ...config.movement, enabled: v } })}>
           <div className="flex items-center justify-between">
             <Label className="text-xs text-muted-foreground">模式</Label>
-            <button onClick={() => update({ movement: { ...config.movement, mode: config.movement.mode === "oscillate" ? "linear" : "oscillate" } })} className="text-xs font-mono text-primary hover:underline">
+            <button onClick={() => {
+              const newMode = config.movement.mode === "oscillate" ? "linear" : "oscillate";
+              const updates: any = { movement: { ...config.movement, mode: newMode } };
+              if (newMode === "linear" && (config.movement.startX ?? 0) === 0 && (config.movement.startY ?? 0) === 0 && (config.movement.targetX ?? 0) === 0 && (config.movement.targetY ?? 0) === 0) {
+                updates.movement.startX = -50;
+              }
+              update(updates);
+            }} className="text-xs font-mono text-primary hover:underline">
               {config.movement.mode === "oscillate" ? "來回移動 ⇄" : "單次移動 A→B"}
             </button>
           </div>
