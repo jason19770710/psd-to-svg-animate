@@ -192,8 +192,8 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
             <button onClick={() => {
               const newMode = config.movement.mode === "oscillate" ? "linear" : "oscillate";
               const updates: any = { movement: { ...config.movement, mode: newMode } };
-              if (newMode === "linear" && (config.movement.startX ?? 0) === 0 && (config.movement.startY ?? 0) === 0 && (config.movement.targetX ?? 0) === 0 && (config.movement.targetY ?? 0) === 0) {
-                updates.movement.startX = -50;
+              if (newMode === "linear" && (config.movement.targetX ?? 0) === 0 && (config.movement.targetY ?? 0) === 0) {
+                updates.movement.targetX = -50;
               }
               update(updates);
             }} className="text-xs font-mono text-primary hover:underline">
@@ -204,14 +204,14 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
             <>
               <div className="rounded-md bg-muted/50 p-2.5 space-y-1.5">
                 <p className="text-xs text-muted-foreground">
-                  B 點（起點）：
-                  <span className="font-mono text-primary"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
+                  A 點（終點，預設位置）：
+                  <span className="font-mono text-destructive"> (0, 0)</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  A 點（終點）：
-                  <span className="font-mono text-destructive"> ({config.movement.startX ?? 0}, {config.movement.startY ?? 0})</span>
+                  B 點（起點，可拖曳）：
+                  <span className="font-mono text-primary"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
                 </p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1">在畫布上拖曳 A / B 標記來設定位置</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">在畫布上拖曳藍色 B 標記來設定起點位置</p>
               </div>
               <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
                 onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
