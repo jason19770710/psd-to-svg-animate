@@ -541,6 +541,15 @@ export default function Index() {
           onMoveLayer={moveLayer}
           onMoveStart={saveSnapshot}
           animKey={linearPlayKey}
+          onMoveBPoint={(id, tx, ty) => {
+            setAnimations((prev) => ({
+              ...prev,
+              [id]: {
+                ...prev[id],
+                movement: { ...prev[id].movement, targetX: tx, targetY: ty },
+              },
+            }));
+          }}
         />
 
         <div className="w-72 border-l border-border bg-card flex-shrink-0 overflow-hidden flex flex-col">
