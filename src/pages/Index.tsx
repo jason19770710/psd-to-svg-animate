@@ -327,8 +327,17 @@ export default function Index() {
 
   const updateAnimation = useCallback((id: string, config: AnimationConfig) => {
     saveSnapshot();
+    // Track base position when entering linear mode
+    if (config.movement.mode === "linear" && config.movement.enabled) {
+      const layer = layers.find((l) => l.id === id);
+      if (layer && !linearBasePosRef.current) {
+        linearBasePosRef.current = { left: layer.left, top: layer.top };
+      }
+    } else {
+      linearBasePosRef.current = null;
+    }
     setAnimations((prev) => ({ ...prev, [id]: config }));
-  }, [saveSnapshot]);
+  }, [saveSnapshot, layers]);
 
   const moveLayer = useCallback((id: string, left: number, top: number) => {
     setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, left, top } : l)));
