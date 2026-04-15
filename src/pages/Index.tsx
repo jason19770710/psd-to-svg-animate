@@ -571,6 +571,7 @@ export default function Index() {
               flipV={!!selectedLayer.flipV}
               onFlip={(axis) => flipLayer(selectedId!, axis)}
               onPlayLinear={() => setLinearPlayKey((k) => k + 1)}
+              onResetLinear={() => setLinearPlayKey((k) => k + 1)}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center p-4">
