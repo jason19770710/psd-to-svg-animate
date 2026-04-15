@@ -359,15 +359,15 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                 return (
                   <g data-linear-marker="true" onPointerDownCapture={(e) => e.stopPropagation()}>
                     {/* Line from A to B */}
-                    <line x1={aX} y1={aY} x2={bX} y2={bY} stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
-                    {/* A marker (draggable) */}
-                    <circle cx={aX} cy={aY} r={markerSize} fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={1.5} style={{ cursor: "grab" }}
+                    <line x1={aX} y1={aY} x2={bX} y2={bY} stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
+                    {/* A marker - red (start) */}
+                    <circle cx={aX} cy={aY} r={markerSize} fill="hsl(var(--destructive) / 0.2)" stroke="hsl(var(--destructive))" strokeWidth={1.5} style={{ cursor: "grab" }}
                       onPointerDown={(e) => handleMarkerPointerDown(e, selectedId!, "A", sx, sy)} />
-                    <text x={aX} y={aY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--primary))" pointerEvents="none">A</text>
-                    {/* B marker (draggable) */}
-                    <circle cx={bX} cy={bY} r={markerSize} fill="hsl(var(--destructive) / 0.2)" stroke="hsl(var(--destructive))" strokeWidth={1.5} style={{ cursor: "grab" }}
+                    <text x={aX} y={aY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--destructive))" pointerEvents="none">A</text>
+                    {/* B marker - blue (end, default layer position) */}
+                    <circle cx={bX} cy={bY} r={markerSize} fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={1.5} style={{ cursor: "grab" }}
                       onPointerDown={(e) => handleMarkerPointerDown(e, selectedId!, "B", tx, ty)} />
-                    <text x={bX} y={bY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--destructive))" pointerEvents="none">B</text>
+                    <text x={bX} y={bY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--primary))" pointerEvents="none">B</text>
                   </g>
                 );
               })()}
