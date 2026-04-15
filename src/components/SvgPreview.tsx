@@ -15,7 +15,8 @@ interface SvgPreviewProps {
   onMoveStart?: () => void;
   animKey?: number;
   onMoveBPoint?: (id: string, targetX: number, targetY: number) => void;
-  onMoveAPoint?: (id: string, startX: number, startY: number) => void;
+  onMoveAPointStart?: (id: string) => void;
+  onMoveAPoint?: (id: string, dx: number, dy: number) => void;
 }
 
 const ZOOM_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
