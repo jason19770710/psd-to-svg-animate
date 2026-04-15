@@ -101,11 +101,19 @@ export function generateAnimationCSS(
     // --- Fade (opacity) ---
     if (hasFade) {
       const fName = `anim-fade-${id}`;
-      css += `@keyframes ${fName} {
+      if (anim.fade.loop) {
+        css += `@keyframes ${fName} {
   0%, 100% { opacity: ${anim.fade.fromOpacity}; }
   50% { opacity: ${anim.fade.toOpacity}; }
 }\n`;
-      css += `.layer-fade-${id} { animation: ${fName} ${anim.fade.speed}s ease-in-out ${anim.fade.loop ? "infinite" : "1"}; }\n`;
+        css += `.layer-fade-${id} { animation: ${fName} ${anim.fade.speed}s ease-in-out infinite; }\n`;
+      } else {
+        css += `@keyframes ${fName} {
+  0% { opacity: ${anim.fade.fromOpacity}; }
+  100% { opacity: ${anim.fade.toOpacity}; }
+}\n`;
+        css += `.layer-fade-${id} { animation: ${fName} ${anim.fade.speed}s ease-in-out 1 forwards; }\n`;
+      }
     }
 
     // --- Color shift (filter) ---
