@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { AnimationConfig } from "@/types/psd";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2 } from "lucide-react";
+import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AnimationPanelProps {
