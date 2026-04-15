@@ -219,10 +219,11 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const handleMarkerPointerDown = useCallback((e: React.PointerEvent, layerId: string, point: "A" | "B", currentX: number, currentY: number) => {
     if (spaceHeld || isPanning) return;
     e.stopPropagation();
+    if (point === "A") onMoveAPointStart?.(layerId);
     const coords = toSvgCoords(e.clientX, e.clientY);
     markerDragRef.current = { id: layerId, point, startX: coords.x, startY: coords.y, origTX: currentX, origTY: currentY };
     (e.target as Element).setPointerCapture(e.pointerId);
-  }, [toSvgCoords, spaceHeld, isPanning]);
+  }, [toSvgCoords, spaceHeld, isPanning, onMoveAPointStart]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
