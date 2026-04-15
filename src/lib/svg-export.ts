@@ -79,7 +79,7 @@ export function generateAnimationCSS(
       const oscDuration = Math.max(...oscSpeeds);
 
       const anyOscLoop = (hasScale && anim.scale.loop) ||
-                         (hasMovement && anim.movement.loop) ||
+                         (hasMovement && anim.movement.loop && anim.movement.mode !== "linear") ||
                          (hasAlternateRotate && anim.rotate.loop);
 
       if (isLinearMovement && !hasScale && !hasAlternateRotate) {
@@ -88,7 +88,7 @@ export function generateAnimationCSS(
   0% { transform: translate(0, 0); }
   100% { transform: ${getMovementTranslate(anim.movement.angle, anim.movement.distance)}; }
 }\n`;
-        css += `.layer-osc-${id} { transform-origin: ${origin}; animation: ${oName} ${oscDuration}s ease-in-out ${anyOscLoop ? "infinite" : "1"} forwards; }\n`;
+        css += `.layer-osc-${id} { transform-origin: ${origin}; animation: ${oName} ${oscDuration}s ease-in-out 1 forwards; }\n`;
       } else {
         css += `@keyframes ${oName} {
   0%, 100% { transform: ${buildOsc("start")}; }
