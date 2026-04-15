@@ -416,6 +416,9 @@ export default function Index() {
           <h1 className="text-2xl font-bold text-foreground font-mono">PSD 動態 SVG 產生器</h1>
         </div>
         <p className="text-muted-foreground text-sm text-center max-w-md">
+          此APP的用途為：加速新版拉拉熊的「<span style={{ color: '#62cde3' }}>背景及標題動態SVG製作</span>」。
+        </p>
+        <p className="text-muted-foreground text-sm text-center max-w-md mt-2">
           上傳 PSD 檔案，為每個圖層設定動畫效果，<br />
           然後導出為帶有內嵌 CSS 動畫的 SVG 檔案。
         </p>
