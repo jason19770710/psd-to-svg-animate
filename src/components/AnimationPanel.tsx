@@ -187,14 +187,15 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
           {config.movement.mode === "linear" ? (
             <>
               <div className="rounded-md bg-muted/50 p-2.5 space-y-1.5">
-                <p className="text-xs text-muted-foreground">A 點：圖層目前位置</p>
                 <p className="text-xs text-muted-foreground">
-                  B 點：
-                  {config.movement.targetX !== undefined && config.movement.targetY !== undefined
-                    ? <span className="font-mono text-primary"> 偏移 ({config.movement.targetX}, {config.movement.targetY})</span>
-                    : <span className="text-yellow-500"> 請在畫布上拖曳 B 標記點</span>
-                  }
+                  A 點（起點）：
+                  <span className="font-mono text-primary"> ({config.movement.startX ?? 0}, {config.movement.startY ?? 0})</span>
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  B 點（終點）：
+                  <span className="font-mono text-destructive"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">在畫布上拖曳 A / B 標記來設定位置</p>
               </div>
               <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
                 onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
