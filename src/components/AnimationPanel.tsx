@@ -187,6 +187,12 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
             onChange={(v) => update({ movement: { ...config.movement, distance: v } })} />
           <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
             onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
+          <div className="flex items-center justify-between">
+            <Label className="text-xs text-muted-foreground">模式</Label>
+            <button onClick={() => update({ movement: { ...config.movement, mode: config.movement.mode === "oscillate" ? "linear" : "oscillate" } })} className="text-xs font-mono text-primary hover:underline">
+              {config.movement.mode === "oscillate" ? "來回移動 ⇄" : "單次移動 A→B"}
+            </button>
+          </div>
           <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
         </Section>
 
