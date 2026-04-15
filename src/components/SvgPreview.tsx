@@ -189,16 +189,32 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   }, [layers, toSvgCoords, onSelectLayer, onMoveStart, spaceHeld, isPanning]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (bPointDragRef.current) {
+      const coords = toSvgCoords(e.clientX, e.clientY);
+      const dx = coords.x - bPointDragRef.current.startX;
+      const dy = coords.y - bPointDragRef.current.startY;
+      onMoveBPoint?.(bPointDragRef.current.id, Math.round(bPointDragRef.current.origTX + dx), Math.round(bPointDragRef.current.origTY + dy));
+      return;
+    }
     if (!dragRef.current) return;
     const coords = toSvgCoords(e.clientX, e.clientY);
     const dx = coords.x - dragRef.current.startX;
     const dy = coords.y - dragRef.current.startY;
     onMoveLayer(dragRef.current.id, Math.round(dragRef.current.origLeft + dx), Math.round(dragRef.current.origTop + dy));
-  }, [toSvgCoords, onMoveLayer]);
+  }, [toSvgCoords, onMoveLayer, onMoveBPoint]);
 
   const handlePointerUp = useCallback(() => {
     dragRef.current = null;
+    bPointDragRef.current = null;
   }, []);
+
+  const handleBPointPointerDown = useCallback((e: React.PointerEvent, layerId: string, currentTX: number, currentTY: number) => {
+    if (spaceHeld || isPanning) return;
+    e.stopPropagation();
+    const coords = toSvgCoords(e.clientX, e.clientY);
+    bPointDragRef.current = { id: layerId, startX: coords.x, startY: coords.y, origTX: currentTX, origTY: currentTY };
+    (e.target as Element).setPointerCapture(e.pointerId);
+  }, [toSvgCoords, spaceHeld, isPanning]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
