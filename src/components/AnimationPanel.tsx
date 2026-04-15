@@ -13,6 +13,7 @@ interface AnimationPanelProps {
   flipH: boolean;
   flipV: boolean;
   onFlip: (axis: "h" | "v") => void;
+  onPlayLinear?: () => void;
 }
 
 function Section({
