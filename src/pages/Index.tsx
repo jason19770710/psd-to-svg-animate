@@ -574,6 +574,23 @@ export default function Index() {
               onFlip={(axis) => flipLayer(selectedId!, axis)}
               onPlayLinear={() => setLinearPlayKey((k) => k + 1)}
               onResetLinear={() => setLinearPlayKey((k) => k + 1)}
+              onRecordBPoint={() => {
+                if (!selectedLayer || !selectedId) return;
+                const baseLeft = linearBasePosRef.current?.left ?? selectedLayer.left;
+                const baseTop = linearBasePosRef.current?.top ?? selectedLayer.top;
+                const tx = selectedLayer.left - baseLeft;
+                const ty = selectedLayer.top - baseTop;
+                saveSnapshot();
+                setAnimations((prev) => ({
+                  ...prev,
+                  [selectedId]: {
+                    ...prev[selectedId],
+                    movement: { ...prev[selectedId].movement, targetX: tx, targetY: ty },
+                  },
+                }));
+                setLayers((prev) => prev.map((l) => l.id === selectedId ? { ...l, left: baseLeft, top: baseTop } : l));
+                linearBasePosRef.current = { left: baseLeft, top: baseTop };
+              }}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center p-4">

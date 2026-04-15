@@ -17,6 +17,7 @@ interface AnimationPanelProps {
   onFlip: (axis: "h" | "v") => void;
   onPlayLinear?: () => void;
   onResetLinear?: () => void;
+  onRecordBPoint?: () => void;
 }
 
 function Section({
