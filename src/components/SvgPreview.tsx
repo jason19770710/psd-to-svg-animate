@@ -21,7 +21,7 @@ interface SvgPreviewProps {
 
 const ZOOM_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
-export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey, onMoveBPoint, onMoveAPoint }: SvgPreviewProps) {
+export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey, onMoveBPoint, onMoveAPointStart, onMoveAPoint }: SvgPreviewProps) {
   const css = useMemo(() => generateAnimationCSS(layers, animations), [layers, animations, animKey]);
   const visibleLayers = layers.filter((l) => l.visible);
   const renderLayers = [...visibleLayers].reverse();
