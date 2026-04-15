@@ -276,6 +276,9 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
               className="border border-border rounded"
               style={{ background: "transparent", display: "block", cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : "default" }}
               onPointerDownCapture={(e) => {
+                if ((e.target as Element).closest('[data-linear-marker="true"]')) {
+                  return;
+                }
                 if (shouldStartPanInSvg(e.clientX, e.clientY)) {
                   handlePanStart(e);
                 }
