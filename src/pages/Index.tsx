@@ -550,6 +550,15 @@ export default function Index() {
               },
             }));
           }}
+          onMoveAPoint={(id, sx, sy) => {
+            setAnimations((prev) => ({
+              ...prev,
+              [id]: {
+                ...prev[id],
+                movement: { ...prev[id].movement, startX: sx, startY: sy },
+              },
+            }));
+          }}
         />
 
         <div className="w-72 border-l border-border bg-card flex-shrink-0 overflow-hidden flex flex-col">

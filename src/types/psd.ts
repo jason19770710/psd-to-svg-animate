@@ -21,13 +21,15 @@ export interface AnimationConfig {
   };
   movement: {
     enabled: boolean;
-    angle: number;    // 0-360 degrees (0=up, 90=right, 180=down, 270=left)
-    distance: number; // px
+    angle: number;    // 0-360 degrees (for oscillate mode)
+    distance: number; // px (for oscillate mode)
     speed: number;
     loop: boolean;
-    mode: "oscillate" | "linear"; // oscillate = back and forth, linear = A to B
+    mode: "oscillate" | "linear";
+    startX?: number;  // A point offset X (relative to layer position, for linear mode)
+    startY?: number;  // A point offset Y
     targetX?: number; // B point offset X (relative to layer position, for linear mode)
-    targetY?: number; // B point offset Y (relative to layer position, for linear mode)
+    targetY?: number; // B point offset Y
   };
   rotate: {
     enabled: boolean;
