@@ -276,6 +276,9 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
               className="border border-border rounded"
               style={{ background: "transparent", display: "block", cursor: isPanning ? "grabbing" : spaceHeld ? "grab" : "default" }}
               onPointerDownCapture={(e) => {
+                if ((e.target as Element).closest('[data-linear-marker="true"]')) {
+                  return;
+                }
                 if (shouldStartPanInSvg(e.clientX, e.clientY)) {
                   handlePanStart(e);
                 }
@@ -354,7 +357,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                 const bY = cy + ty;
                 const markerSize = 8;
                 return (
-                  <g onPointerDownCapture={(e) => e.stopPropagation()}>
+                  <g data-linear-marker="true" onPointerDownCapture={(e) => e.stopPropagation()}>
                     {/* Line from A to B */}
                     <line x1={aX} y1={aY} x2={bX} y2={bY} stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
                     {/* A marker (draggable) */}
