@@ -26,6 +26,8 @@ export interface AnimationConfig {
     speed: number;
     loop: boolean;
     mode: "oscillate" | "linear"; // oscillate = back and forth, linear = A to B
+    targetX?: number; // B point offset X (relative to layer position, for linear mode)
+    targetY?: number; // B point offset Y (relative to layer position, for linear mode)
   };
   rotate: {
     enabled: boolean;
