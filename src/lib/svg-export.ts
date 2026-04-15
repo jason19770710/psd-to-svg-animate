@@ -88,9 +88,9 @@ export function generateAnimationCSS(
         const sy = anim.movement.startY ?? 0;
         const tx = anim.movement.targetX ?? 0;
         const ty = anim.movement.targetY ?? 0;
-        // B is start, A is end
-        const startTranslate = (tx || ty) ? `translate(${tx}px, ${ty}px)` : `translate(0, 0)`;
-        const endTranslate = (sx || sy) ? `translate(${sx}px, ${sy}px)` : `translate(0, 0)`;
+        // A is start, B is end
+        const startTranslate = (sx || sy) ? `translate(${sx}px, ${sy}px)` : `translate(0, 0)`;
+        const endTranslate = (tx || ty) ? `translate(${tx}px, ${ty}px)` : `translate(0, 0)`;
         css += `@keyframes ${oName} {
   0% { transform: ${startTranslate}; }
   100% { transform: ${endTranslate}; }
