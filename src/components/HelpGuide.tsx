@@ -31,13 +31,13 @@ const sections: HelpSection[] = [
     icon: <Layers className="h-3.5 w-3.5 text-primary" />,
     title: "圖層管理",
     items: [
-      { icon: <GripVertical className="h-3 w-3" />, text: "拖拽排序 → 調整圖層順序" },
-      { icon: <Eye className="h-3 w-3" />, text: "顯示/隱藏圖層" },
       { icon: <Plus className="h-3 w-3" />, text: "加入圖片或 PSD 為新圖層" },
-      { icon: <Copy className="h-3 w-3" />, text: "複製圖層" },
-      { icon: <Trash2 className="h-3 w-3" />, text: "刪除圖層" },
+      { icon: <GripVertical className="h-3 w-3" />, text: "拖拽排序 → 調整圖層順序" },
       { icon: <Replace className="h-3 w-3" />, text: "替換圖層圖片" },
+      { icon: <Copy className="h-3 w-3" />, text: "複製圖層" },
       { icon: <Ban className="h-3 w-3" />, text: "排除導出（不含於 SVG）" },
+      { icon: <Trash2 className="h-3 w-3" />, text: "刪除圖層" },
+      { icon: <Eye className="h-3 w-3" />, text: "顯示/隱藏圖層" },
     ],
   },
   {
@@ -52,12 +52,12 @@ const sections: HelpSection[] = [
     icon: <RotateCw className="h-3.5 w-3.5 text-primary" />,
     title: "動畫設定（右側面板）",
     items: [
-      { icon: <Move className="h-3 w-3" />, text: "移動：自由角度 + 距離" },
+      { icon: <FlipHorizontal className="h-3 w-3" />, text: "鏡射：水平/垂直翻轉" },
       { icon: <ZoomIn className="h-3 w-3" />, text: "縮放：放大/縮小比例" },
+      { icon: <Move className="h-3 w-3" />, text: "移動：自由角度 + 距離" },
       { icon: <RotateCw className="h-3 w-3" />, text: "旋轉：單向持續 或 來回擺動" },
       { icon: <Blend className="h-3 w-3" />, text: "透明度：淡入淡出效果" },
       { icon: <Palette className="h-3 w-3" />, text: "色彩：色相/飽和度/亮度" },
-      { icon: <FlipHorizontal className="h-3 w-3" />, text: "鏡射：水平/垂直翻轉" },
     ],
   },
   {
