@@ -328,6 +328,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                     {content}
                   </g>
                 );
+              })}
               {/* B point marker for linear movement */}
               {(() => {
                 if (!selectedId) return null;
