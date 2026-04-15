@@ -354,7 +354,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                 const bY = cy + ty;
                 const markerSize = 8;
                 return (
-                  <g>
+                  <g onPointerDownCapture={(e) => e.stopPropagation()}>
                     {/* Line from A to B */}
                     <line x1={aX} y1={aY} x2={bX} y2={bY} stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
                     {/* A marker (draggable) */}
