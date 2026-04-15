@@ -336,29 +336,34 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                   </g>
                 );
               })}
-              {/* B point marker for linear movement */}
+              {/* A/B point markers for linear movement */}
               {(() => {
                 if (!selectedId) return null;
                 const selLayer = layers.find(l => l.id === selectedId);
                 const selAnim = selectedId ? animations[selectedId] : undefined;
                 if (!selLayer || !selAnim?.movement?.enabled || selAnim.movement.mode !== "linear") return null;
+                const sx = selAnim.movement.startX ?? 0;
+                const sy = selAnim.movement.startY ?? 0;
                 const tx = selAnim.movement.targetX ?? 0;
                 const ty = selAnim.movement.targetY ?? 0;
-                const aCx = selLayer.left + selLayer.width / 2;
-                const aCy = selLayer.top + selLayer.height / 2;
-                const bX = aCx + tx;
-                const bY = aCy + ty;
+                const cx = selLayer.left + selLayer.width / 2;
+                const cy = selLayer.top + selLayer.height / 2;
+                const aX = cx + sx;
+                const aY = cy + sy;
+                const bX = cx + tx;
+                const bY = cy + ty;
                 const markerSize = 8;
                 return (
                   <g>
                     {/* Line from A to B */}
-                    <line x1={aCx} y1={aCy} x2={bX} y2={bY} stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
-                    {/* A label */}
-                    <circle cx={aCx} cy={aCy} r={markerSize} fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={1.5} pointerEvents="none" />
-                    <text x={aCx} y={aCy + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--primary))" pointerEvents="none">A</text>
+                    <line x1={aX} y1={aY} x2={bX} y2={bY} stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
+                    {/* A marker (draggable) */}
+                    <circle cx={aX} cy={aY} r={markerSize} fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={1.5} style={{ cursor: "grab" }}
+                      onPointerDown={(e) => handleMarkerPointerDown(e, selectedId!, "A", sx, sy)} />
+                    <text x={aX} y={aY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--primary))" pointerEvents="none">A</text>
                     {/* B marker (draggable) */}
                     <circle cx={bX} cy={bY} r={markerSize} fill="hsl(var(--destructive) / 0.2)" stroke="hsl(var(--destructive))" strokeWidth={1.5} style={{ cursor: "grab" }}
-                      onPointerDown={(e) => handleBPointPointerDown(e, selectedId!, tx, ty)} />
+                      onPointerDown={(e) => handleMarkerPointerDown(e, selectedId!, "B", tx, ty)} />
                     <text x={bX} y={bY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--destructive))" pointerEvents="none">B</text>
                   </g>
                 );
