@@ -55,6 +55,8 @@ export function generateAnimationCSS(
 
     if (hasOscTransform) {
       const oName = `anim-osc-${id}`;
+      const isLinearMovement = hasMovement && anim.movement.mode === "linear";
+
       const buildOsc = (phase: "start" | "mid") => {
         const parts: string[] = [];
         if (hasMovement) {
@@ -80,11 +82,20 @@ export function generateAnimationCSS(
                          (hasMovement && anim.movement.loop) ||
                          (hasAlternateRotate && anim.rotate.loop);
 
-      css += `@keyframes ${oName} {
+      if (isLinearMovement && !hasScale && !hasAlternateRotate) {
+        // Pure linear movement: A to B, no oscillation
+        css += `@keyframes ${oName} {
+  0% { transform: translate(0, 0); }
+  100% { transform: ${getMovementTranslate(anim.movement.angle, anim.movement.distance)}; }
+}\n`;
+        css += `.layer-osc-${id} { transform-origin: ${origin}; animation: ${oName} ${oscDuration}s ease-in-out ${anyOscLoop ? "infinite" : "1"} forwards; }\n`;
+      } else {
+        css += `@keyframes ${oName} {
   0%, 100% { transform: ${buildOsc("start")}; }
   50% { transform: ${buildOsc("mid")}; }
 }\n`;
-      css += `.layer-osc-${id} { transform-origin: ${origin}; animation: ${oName} ${oscDuration}s ease-in-out ${anyOscLoop ? "infinite" : "1"}; }\n`;
+        css += `.layer-osc-${id} { transform-origin: ${origin}; animation: ${oName} ${oscDuration}s ease-in-out ${anyOscLoop ? "infinite" : "1"}; }\n`;
+      }
     }
 
     // --- Fade (opacity) ---
