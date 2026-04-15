@@ -14,11 +14,12 @@ interface SvgPreviewProps {
   onMoveLayer: (id: string, left: number, top: number) => void;
   onMoveStart?: () => void;
   animKey?: number;
+  onMoveBPoint?: (id: string, targetX: number, targetY: number) => void;
 }
 
 const ZOOM_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
-export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey }: SvgPreviewProps) {
+export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey, onMoveBPoint }: SvgPreviewProps) {
   const css = useMemo(() => generateAnimationCSS(layers, animations), [layers, animations, animKey]);
   const visibleLayers = layers.filter((l) => l.visible);
   const renderLayers = [...visibleLayers].reverse();
@@ -26,6 +27,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
   const dragRef = useRef<{ id: string; startX: number; startY: number; origLeft: number; origTop: number } | null>(null);
+  const bPointDragRef = useRef<{ id: string; startX: number; startY: number; origTX: number; origTY: number } | null>(null);
   const panRef = useRef<{ startX: number; startY: number; scrollLeft: number; scrollTop: number } | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
@@ -187,16 +189,32 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   }, [layers, toSvgCoords, onSelectLayer, onMoveStart, spaceHeld, isPanning]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (bPointDragRef.current) {
+      const coords = toSvgCoords(e.clientX, e.clientY);
+      const dx = coords.x - bPointDragRef.current.startX;
+      const dy = coords.y - bPointDragRef.current.startY;
+      onMoveBPoint?.(bPointDragRef.current.id, Math.round(bPointDragRef.current.origTX + dx), Math.round(bPointDragRef.current.origTY + dy));
+      return;
+    }
     if (!dragRef.current) return;
     const coords = toSvgCoords(e.clientX, e.clientY);
     const dx = coords.x - dragRef.current.startX;
     const dy = coords.y - dragRef.current.startY;
     onMoveLayer(dragRef.current.id, Math.round(dragRef.current.origLeft + dx), Math.round(dragRef.current.origTop + dy));
-  }, [toSvgCoords, onMoveLayer]);
+  }, [toSvgCoords, onMoveLayer, onMoveBPoint]);
 
   const handlePointerUp = useCallback(() => {
     dragRef.current = null;
+    bPointDragRef.current = null;
   }, []);
+
+  const handleBPointPointerDown = useCallback((e: React.PointerEvent, layerId: string, currentTX: number, currentTY: number) => {
+    if (spaceHeld || isPanning) return;
+    e.stopPropagation();
+    const coords = toSvgCoords(e.clientX, e.clientY);
+    bPointDragRef.current = { id: layerId, startX: coords.x, startY: coords.y, origTX: currentTX, origTY: currentTY };
+    (e.target as Element).setPointerCapture(e.pointerId);
+  }, [toSvgCoords, spaceHeld, isPanning]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -311,6 +329,33 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                   </g>
                 );
               })}
+              {/* B point marker for linear movement */}
+              {(() => {
+                if (!selectedId) return null;
+                const selLayer = layers.find(l => l.id === selectedId);
+                const selAnim = selectedId ? animations[selectedId] : undefined;
+                if (!selLayer || !selAnim?.movement?.enabled || selAnim.movement.mode !== "linear") return null;
+                const tx = selAnim.movement.targetX ?? 0;
+                const ty = selAnim.movement.targetY ?? 0;
+                const aCx = selLayer.left + selLayer.width / 2;
+                const aCy = selLayer.top + selLayer.height / 2;
+                const bX = aCx + tx;
+                const bY = aCy + ty;
+                const markerSize = 8;
+                return (
+                  <g>
+                    {/* Line from A to B */}
+                    <line x1={aCx} y1={aCy} x2={bX} y2={bY} stroke="hsl(var(--primary))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
+                    {/* A label */}
+                    <circle cx={aCx} cy={aCy} r={markerSize} fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={1.5} pointerEvents="none" />
+                    <text x={aCx} y={aCy + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--primary))" pointerEvents="none">A</text>
+                    {/* B marker (draggable) */}
+                    <circle cx={bX} cy={bY} r={markerSize} fill="hsl(var(--destructive) / 0.2)" stroke="hsl(var(--destructive))" strokeWidth={1.5} style={{ cursor: "grab" }}
+                      onPointerDown={(e) => handleBPointPointerDown(e, selectedId!, tx, ty)} />
+                    <text x={bX} y={bY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--destructive))" pointerEvents="none">B</text>
+                  </g>
+                );
+              })()}
             </svg>
           </div>
         </div>

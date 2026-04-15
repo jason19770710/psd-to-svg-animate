@@ -84,9 +84,12 @@ export function generateAnimationCSS(
 
       if (isLinearMovement && !hasScale && !hasAlternateRotate) {
         // Pure linear movement: A to B, no oscillation
+        const linearTranslate = (anim.movement.targetX !== undefined && anim.movement.targetY !== undefined)
+          ? `translate(${anim.movement.targetX}px, ${anim.movement.targetY}px)`
+          : getMovementTranslate(anim.movement.angle, anim.movement.distance);
         css += `@keyframes ${oName} {
   0% { transform: translate(0, 0); }
-  100% { transform: ${getMovementTranslate(anim.movement.angle, anim.movement.distance)}; }
+  100% { transform: ${linearTranslate}; }
 }\n`;
         css += `.layer-osc-${id} { transform-origin: ${origin}; animation: ${oName} ${oscDuration}s ease-in-out 1 forwards; }\n`;
       } else {
