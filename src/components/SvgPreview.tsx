@@ -303,7 +303,7 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
 
                 return (
                   <g
-                    key={layer.id}
+                    key={`${layer.id}-${animKey || 0}`}
                     onPointerDown={(e) => handlePointerDown(e, layer.id)}
                     style={{ cursor: "grab" }}
                   >
