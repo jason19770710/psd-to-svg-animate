@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 
 interface AnimationPanelProps {
   layerName: string;
+  layerWidth: number;
+  layerHeight: number;
   config: AnimationConfig;
   onChange: (config: AnimationConfig) => void;
   flipH: boolean;
@@ -193,7 +195,7 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
               const newMode = config.movement.mode === "oscillate" ? "linear" : "oscillate";
               const updates: any = { movement: { ...config.movement, mode: newMode } };
               if (newMode === "linear" && (config.movement.targetX ?? 0) === 0 && (config.movement.targetY ?? 0) === 0) {
-                updates.movement.targetX = -50;
+                updates.movement.targetX = -(layerWidth + 20);
               }
               update(updates);
             }} className="text-xs font-mono text-primary hover:underline">
