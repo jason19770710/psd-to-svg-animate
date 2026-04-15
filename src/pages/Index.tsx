@@ -561,27 +561,24 @@ export default function Index() {
               },
             }));
           }}
+          onMoveAPointStart={(id) => {
+            const layer = layers.find((l) => l.id === id);
+            const anim = animations[id];
+            if (layer && anim) {
+              aDragBaseRef.current = { left: layer.left, top: layer.top, tx: anim.movement.targetX ?? 0, ty: anim.movement.targetY ?? 0 };
+            }
+          }}
           onMoveAPoint={(id, dx, dy) => {
-            // dx, dy = accumulated delta from drag start
-            // Move layer position and compensate targetX/targetY so B stays in place
-            setLayers((prev) => prev.map((l) => {
-              if (l.id !== id) return l;
-              const baseLeft = (l as any)._aBaseLeft ?? l.left;
-              const baseTop = (l as any)._aBaseTop ?? l.top;
-              return { ...l, left: baseLeft + dx, top: baseTop + dy, _aBaseLeft: baseLeft, _aBaseTop: baseTop } as any;
+            const base = aDragBaseRef.current;
+            if (!base) return;
+            setLayers((prev) => prev.map((l) => l.id === id ? { ...l, left: base.left + dx, top: base.top + dy } : l));
+            setAnimations((prev) => ({
+              ...prev,
+              [id]: {
+                ...prev[id],
+                movement: { ...prev[id].movement, targetX: base.tx - dx, targetY: base.ty - dy },
+              },
             }));
-            setAnimations((prev) => {
-              const anim = prev[id];
-              const baseTx = (anim.movement as any)._aBaseTx ?? anim.movement.targetX ?? 0;
-              const baseTy = (anim.movement as any)._aBaseTy ?? anim.movement.targetY ?? 0;
-              return {
-                ...prev,
-                [id]: {
-                  ...anim,
-                  movement: { ...anim.movement, targetX: baseTx - dx, targetY: baseTy - dy, _aBaseTx: baseTx, _aBaseTy: baseTy } as any,
-                },
-              };
-            });
           }}
         />
 
