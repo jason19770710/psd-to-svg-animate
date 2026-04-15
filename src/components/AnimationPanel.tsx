@@ -178,30 +178,46 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
         {/* Movement */}
         <Section icon={Move} title="移動 Movement" enabled={config.movement.enabled}
           onToggle={(v) => update({ movement: { ...config.movement, enabled: v } })}>
-          <div>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">方向</Label>
-            <AngleSelector
-              angle={config.movement.angle}
-              onChange={(v) => update({ movement: { ...config.movement, angle: v } })}
-            />
-          </div>
-          <SliderRow label="距離" value={config.movement.distance} min={1} max={200} step={1} unit="px"
-            onChange={(v) => update({ movement: { ...config.movement, distance: v } })} />
-          <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
-            onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
           <div className="flex items-center justify-between">
             <Label className="text-xs text-muted-foreground">模式</Label>
             <button onClick={() => update({ movement: { ...config.movement, mode: config.movement.mode === "oscillate" ? "linear" : "oscillate" } })} className="text-xs font-mono text-primary hover:underline">
               {config.movement.mode === "oscillate" ? "來回移動 ⇄" : "單次移動 A→B"}
             </button>
           </div>
-          {config.movement.mode === "oscillate" ? (
-            <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
+          {config.movement.mode === "linear" ? (
+            <>
+              <div className="rounded-md bg-muted/50 p-2.5 space-y-1.5">
+                <p className="text-xs text-muted-foreground">A 點：圖層目前位置</p>
+                <p className="text-xs text-muted-foreground">
+                  B 點：
+                  {config.movement.targetX !== undefined && config.movement.targetY !== undefined
+                    ? <span className="font-mono text-primary"> 偏移 ({config.movement.targetX}, {config.movement.targetY})</span>
+                    : <span className="text-yellow-500"> 請在畫布上拖曳 B 標記點</span>
+                  }
+                </p>
+              </div>
+              <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
+                onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
+              <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => onPlayLinear?.()}>
+                <Play className="h-3.5 w-3.5" />
+                <span className="text-xs">播放移動效果</span>
+              </Button>
+            </>
           ) : (
-            <Button variant="outline" size="sm" className="w-full gap-2" onClick={() => onPlayLinear?.()}>
-              <Play className="h-3.5 w-3.5" />
-              <span className="text-xs">播放移動效果</span>
-            </Button>
+            <>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1.5 block">方向</Label>
+                <AngleSelector
+                  angle={config.movement.angle}
+                  onChange={(v) => update({ movement: { ...config.movement, angle: v } })}
+                />
+              </div>
+              <SliderRow label="距離" value={config.movement.distance} min={1} max={200} step={1} unit="px"
+                onChange={(v) => update({ movement: { ...config.movement, distance: v } })} />
+              <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
+                onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
+              <LoopToggle loop={config.movement.loop} onChange={(v) => update({ movement: { ...config.movement, loop: v } })} />
+            </>
           )}
         </Section>
 
