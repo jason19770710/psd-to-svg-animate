@@ -3,7 +3,7 @@ import { AnimationConfig } from "@/types/psd";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2, Play, RotateCcw } from "lucide-react";
+import { Settings2, ZoomIn, Move, RotateCw, Eye, Palette, FlipHorizontal2, FlipVertical2, Play, RotateCcw, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AnimationPanelProps {
@@ -17,6 +17,7 @@ interface AnimationPanelProps {
   onFlip: (axis: "h" | "v") => void;
   onPlayLinear?: () => void;
   onResetLinear?: () => void;
+  onRecordBPoint?: () => void;
 }
 
 function Section({
@@ -143,7 +144,7 @@ function AngleSelector({ angle, onChange }: { angle: number; onChange: (v: numbe
   );
 }
 
-export function AnimationPanel({ layerName, layerWidth, layerHeight, config, onChange, flipH, flipV, onFlip, onPlayLinear, onResetLinear }: AnimationPanelProps) {
+export function AnimationPanel({ layerName, layerWidth, layerHeight, config, onChange, flipH, flipV, onFlip, onPlayLinear, onResetLinear, onRecordBPoint }: AnimationPanelProps) {
   const update = (partial: Partial<AnimationConfig>) => onChange({ ...config, ...partial });
   const [isLinearPlaying, setIsLinearPlaying] = useState(false);
 
@@ -213,8 +214,12 @@ export function AnimationPanel({ layerName, layerWidth, layerHeight, config, onC
                   B 點（起點，可拖曳）：
                   <span className="font-mono text-primary"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
                 </p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1">在畫布上拖曳藍色 B 標記來設定起點位置</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">拖曳圖層到起點位置，按下方按鈕記錄為 B 點</p>
               </div>
+              <Button variant="secondary" size="sm" className="w-full gap-2" onClick={() => onRecordBPoint?.()}>
+                <MapPin className="h-3.5 w-3.5" />
+                <span className="text-xs">記錄目前位置為 B 點</span>
+              </Button>
               <SliderRow label="速度" value={config.movement.speed} min={0.1} max={5} step={0.1} unit="s"
                 onChange={(v) => update({ movement: { ...config.movement, speed: v } })} />
               {!isLinearPlaying ? (
