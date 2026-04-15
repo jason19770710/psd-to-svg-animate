@@ -15,12 +15,13 @@ interface SvgPreviewProps {
   onMoveStart?: () => void;
   animKey?: number;
   onMoveBPoint?: (id: string, targetX: number, targetY: number) => void;
-  onMoveAPoint?: (id: string, startX: number, startY: number) => void;
+  onMoveAPointStart?: (id: string) => void;
+  onMoveAPoint?: (id: string, dx: number, dy: number) => void;
 }
 
 const ZOOM_STEPS = [0.1, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
 
-export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey, onMoveBPoint, onMoveAPoint }: SvgPreviewProps) {
+export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, selectedId, onSelectLayer, onMoveLayer, onMoveStart, animKey, onMoveBPoint, onMoveAPointStart, onMoveAPoint }: SvgPreviewProps) {
   const css = useMemo(() => generateAnimationCSS(layers, animations), [layers, animations, animKey]);
   const visibleLayers = layers.filter((l) => l.visible);
   const renderLayers = [...visibleLayers].reverse();
@@ -218,10 +219,11 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
   const handleMarkerPointerDown = useCallback((e: React.PointerEvent, layerId: string, point: "A" | "B", currentX: number, currentY: number) => {
     if (spaceHeld || isPanning) return;
     e.stopPropagation();
+    if (point === "A") onMoveAPointStart?.(layerId);
     const coords = toSvgCoords(e.clientX, e.clientY);
     markerDragRef.current = { id: layerId, point, startX: coords.x, startY: coords.y, origTX: currentX, origTY: currentY };
     (e.target as Element).setPointerCapture(e.pointerId);
-  }, [toSvgCoords, spaceHeld, isPanning]);
+  }, [toSvgCoords, spaceHeld, isPanning, onMoveAPointStart]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -358,12 +360,15 @@ export function SvgPreview({ layers, animations, canvasWidth, canvasHeight, sele
                   <g data-linear-marker="true" onPointerDownCapture={(e) => e.stopPropagation()}>
                     {/* Line from B to A */}
                     <line x1={bX} y1={bY} x2={aX} y2={aY} stroke="hsl(var(--muted-foreground))" strokeWidth={1.5} strokeDasharray="4 3" pointerEvents="none" opacity={0.6} />
-                    {/* A marker - red (end, fixed at default layer position) */}
-                    <circle cx={aX} cy={aY} r={markerSize} fill="hsl(var(--destructive) / 0.2)" stroke="hsl(var(--destructive))" strokeWidth={1.5} style={{ cursor: "default" }} pointerEvents="none" />
+                    {/* A marker - red (end, draggable - moves layer position) */}
+                    <circle cx={aX} cy={aY} r={markerSize + 4} fill="transparent" stroke="none" style={{ cursor: "grab" }}
+                      onPointerDown={(e) => handleMarkerPointerDown(e, selectedId!, "A", 0, 0)} />
+                    <circle cx={aX} cy={aY} r={markerSize} fill="hsl(var(--destructive) / 0.2)" stroke="hsl(var(--destructive))" strokeWidth={1.5} pointerEvents="none" />
                     <text x={aX} y={aY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--destructive))" pointerEvents="none">A</text>
-                    {/* B marker - blue (start, draggable) */}
-                    <circle cx={bX} cy={bY} r={markerSize} fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={1.5} style={{ cursor: "grab" }}
+                    {/* B marker - blue (start, draggable - moves targetX/targetY) */}
+                    <circle cx={bX} cy={bY} r={markerSize + 4} fill="transparent" stroke="none" style={{ cursor: "grab" }}
                       onPointerDown={(e) => handleMarkerPointerDown(e, selectedId!, "B", tx, ty)} />
+                    <circle cx={bX} cy={bY} r={markerSize} fill="hsl(var(--primary) / 0.2)" stroke="hsl(var(--primary))" strokeWidth={1.5} pointerEvents="none" />
                     <text x={bX} y={bY + 1} textAnchor="middle" dominantBaseline="central" fontSize={10} fontWeight="bold" fill="hsl(var(--primary))" pointerEvents="none">B</text>
                   </g>
                 );

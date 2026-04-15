@@ -71,6 +71,7 @@ export default function Index() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [linearPlayKey, setLinearPlayKey] = useState(0);
   const linearBasePosRef = useRef<{ left: number; top: number } | null>(null);
+  const aDragBaseRef = useRef<{ left: number; top: number; tx: number; ty: number } | null>(null);
   const [canvasSize, setCanvasSize] = useState({ w: 2880, h: 1620 });
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -560,12 +561,22 @@ export default function Index() {
               },
             }));
           }}
-          onMoveAPoint={(id, sx, sy) => {
+          onMoveAPointStart={(id) => {
+            const layer = layers.find((l) => l.id === id);
+            const anim = animations[id];
+            if (layer && anim) {
+              aDragBaseRef.current = { left: layer.left, top: layer.top, tx: anim.movement.targetX ?? 0, ty: anim.movement.targetY ?? 0 };
+            }
+          }}
+          onMoveAPoint={(id, dx, dy) => {
+            const base = aDragBaseRef.current;
+            if (!base) return;
+            setLayers((prev) => prev.map((l) => l.id === id ? { ...l, left: base.left + dx, top: base.top + dy } : l));
             setAnimations((prev) => ({
               ...prev,
               [id]: {
                 ...prev[id],
-                movement: { ...prev[id].movement, startX: sx, startY: sy },
+                movement: { ...prev[id].movement, targetX: base.tx - dx, targetY: base.ty - dy },
               },
             }));
           }}
