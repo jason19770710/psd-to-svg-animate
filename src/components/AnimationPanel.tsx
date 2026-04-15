@@ -189,11 +189,11 @@ export function AnimationPanel({ layerName, config, onChange, flipH, flipV, onFl
               <div className="rounded-md bg-muted/50 p-2.5 space-y-1.5">
                 <p className="text-xs text-muted-foreground">
                   A 點（起點）：
-                  <span className="font-mono text-primary"> ({config.movement.startX ?? 0}, {config.movement.startY ?? 0})</span>
+                  <span className="font-mono text-destructive"> ({config.movement.startX ?? 0}, {config.movement.startY ?? 0})</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  B 點（終點）：
-                  <span className="font-mono text-destructive"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
+                  B 點（終點，預設圖層位置）：
+                  <span className="font-mono text-primary"> ({config.movement.targetX ?? 0}, {config.movement.targetY ?? 0})</span>
                 </p>
                 <p className="text-[10px] text-muted-foreground/60 mt-1">在畫布上拖曳 A / B 標記來設定位置</p>
               </div>
