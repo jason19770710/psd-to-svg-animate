@@ -124,7 +124,7 @@ export function LayerList({ layers, selectedId, animations, onSelect, onToggleVi
                     input.click();
                   }}
                   className="text-muted-foreground hover:text-foreground p-0.5"
-                  title="替換圖片"
+                  title="替換圖片(僅可PNG檔)"
                 >
                   <Replace className="h-3.5 w-3.5" />
                 </button>
